@@ -42,9 +42,10 @@ module fv_io_mod
                                      open_file, read_restart, read_restart_bc, write_restart, &
                                      write_restart_bc, close_file, register_field, write_data, &
                                      get_global_io_domain_indices, register_variable_attribute, &
-                                     variable_exists, read_data
+                                     variable_exists, read_data, set_filename_appendix
   use mpp_mod,                 only: mpp_error, FATAL, NOTE, WARNING, mpp_root_pe, &
-                                     mpp_sync, mpp_pe, mpp_declare_pelist
+                                     mpp_sync, mpp_pe, mpp_declare_pelist, mpp_get_current_pelist, &
+                                     mpp_npes
   use mpp_domains_mod,         only: domain2d, EAST, WEST, NORTH, CENTER, SOUTH, CORNER, &
                                      mpp_get_compute_domain, mpp_get_data_domain, &
                                      mpp_get_layout, mpp_get_ntile_count, &
@@ -336,12 +337,7 @@ contains
     character(len=1) :: tile_num
 
     suffix = ''
-    ! If this is a nesting case, it will need to append "nestXX" to the filename
-    if (Atm(1)%neststruct%nested) then
-       suffix = '.'//trim(Atm(1)%nml_filename)//''
-    endif
-
-    fname = 'INPUT/fv_core.res'//trim(suffix)//'.nc'
+    fname = 'INPUT/fv_core.res.nc'
     Atm(1)%Fv_restart_is_open = open_file(Atm(1)%Fv_restart,fname,"read", is_restart=.true.)
     if (Atm(1)%Fv_restart_is_open) then
       call fv_io_register_restart(Atm(1))
@@ -367,7 +363,7 @@ contains
     elseif (Atm(1)%neststruct%nested) then
        tile_num = ''
        write(tile_num,'(I1)') Atm(1)%neststruct%nestupdate
-       suffix = ''//trim(suffix)//'.tile' //trim(tile_num)//''
+       suffix = '.tile' //trim(tile_num)//''
     endif
 
     fname = 'INPUT/fv_core.res'//trim(suffix)//'.nc'
@@ -732,11 +728,6 @@ contains
     endif
 
     suffix = ''
-    ! If this is a nesting case, it will need to append "nestXX" to the filename
-    if (Atm%neststruct%nested) then
-       suffix = '.'//trim(Atm%nml_filename)//''
-    endif
-
     fname = 'RESTART/fv_core.res'//trim(suffix)//'.nc'
     Atm%Fv_restart_is_open = open_file(Atm%Fv_restart, fname, "overwrite", is_restart=.true.)
     if (Atm%Fv_restart_is_open) then
@@ -802,6 +793,7 @@ contains
        call close_file(Atm%Tra_restart)
        Atm%Tra_restart_is_open = .false.
     endif
+
   end subroutine  fv_io_write_restart
 
   subroutine register_bcs_2d(Atm, BCfile_ne, BCfile_sw, fname_ne, fname_sw, &
@@ -945,6 +937,11 @@ contains
                                         x1_pelist, is_root_pe, x_halo=x_halo_ns, &
                                         y_halo=(size(var,2)-y_halo), jshift=-(je+j_stag))
 
+    deallocate (x1_pelist)
+    deallocate (y1_pelist)
+    deallocate (x2_pelist)
+    deallocate (y2_pelist)
+
   end subroutine register_bcs_2d
 
 
@@ -966,6 +963,10 @@ contains
     integer, allocatable, dimension(:) :: x1_pelist, y1_pelist
     integer, allocatable, dimension(:) :: x2_pelist, y2_pelist
     logical :: is_root_pe
+    logical :: mandatory_flag
+
+    mandatory_flag = .true.
+    if (present(mandatory)) mandatory_flag = mandatory
 
     i_stag = 0
     j_stag = 0
@@ -1015,12 +1016,12 @@ contains
                                         trim(var_name)//'_west_t1', &
                                         var_bc%west_t1, &
                                         indices, global_size, y2_pelist, &
-                                        is_root_pe, jshift=y_halo, is_optional=.not.mandatory)
+                                        is_root_pe, jshift=y_halo, is_optional=.not.mandatory_flag)
 !register west prognostic halo data
     if (present(var) .and. Atm%neststruct%BCfile_sw_is_open) call register_restart_field(BCfile_sw, &
                                         trim(var_name)//'_west', &
                                         var, indices, global_size, &
-                                        y2_pelist, is_root_pe, jshift=y_halo, is_optional=.not.mandatory)
+                                        y2_pelist, is_root_pe, jshift=y_halo, is_optional=.not.mandatory_flag)
 
 !define east root_pe
     is_root_pe = .FALSE.
@@ -1030,7 +1031,7 @@ contains
                                         trim(var_name)//'_east_t1', &
                                         var_bc%east_t1, &
                                         indices, global_size, y1_pelist, &
-                                        is_root_pe, jshift=y_halo, is_optional=.not.mandatory)
+                                        is_root_pe, jshift=y_halo, is_optional=.not.mandatory_flag)
 
 !reset indices for prognostic variables in the east halo
     indices(1) = ied-x_halo+1+i_stag
@@ -1040,7 +1041,7 @@ contains
                                         trim(var_name)//'_east', &
                                         var, indices, global_size, &
                                         y1_pelist, is_root_pe, jshift=y_halo, &
-                                        x_halo=(size(var,1)-x_halo), ishift=-(ie+i_stag), is_optional=.not.mandatory)
+                                        x_halo=(size(var,1)-x_halo), ishift=-(ie+i_stag), is_optional=.not.mandatory_flag)
 
 !NORTH & SOUTH
 !set defaults for north/south halo regions
@@ -1065,12 +1066,12 @@ contains
                                         trim(var_name)//'_south_t1', &
                                         var_bc%south_t1, &
                                         indices, global_size, x2_pelist, &
-                                        is_root_pe, x_halo=x_halo_ns, is_optional=.not.mandatory)
+                                        is_root_pe, x_halo=x_halo_ns, is_optional=.not.mandatory_flag)
 !register south prognostic halo data
     if (present(var) .and. Atm%neststruct%BCfile_sw_is_open) call register_restart_field(BCfile_sw, &
                                         trim(var_name)//'_south', &
                                         var, indices, global_size, &
-                                        x2_pelist, is_root_pe, x_halo=x_halo_ns, is_optional=.not.mandatory)
+                                        x2_pelist, is_root_pe, x_halo=x_halo_ns, is_optional=.not.mandatory_flag)
 
 !define north root_pe
     is_root_pe = .FALSE.
@@ -1080,7 +1081,7 @@ contains
                                         trim(var_name)//'_north_t1', &
                                         var_bc%north_t1, &
                                         indices, global_size, x1_pelist, &
-                                        is_root_pe, x_halo=x_halo_ns, is_optional=.not.mandatory)
+                                        is_root_pe, x_halo=x_halo_ns, is_optional=.not.mandatory_flag)
 
 !reset indices for prognostic variables in the north halo
     indices(3) = jed-y_halo+1+j_stag
@@ -1090,7 +1091,11 @@ contains
                                         trim(var_name)//'_north', &
                                         var, indices, global_size, &
                                         x1_pelist, is_root_pe, x_halo=x_halo_ns, &
-                                        y_halo=(size(var,2)-y_halo), jshift=-(je+j_stag), is_optional=.not.mandatory)
+                                        y_halo=(size(var,2)-y_halo), jshift=-(je+j_stag), is_optional=.not.mandatory_flag)
+    deallocate (x1_pelist)
+    deallocate (y1_pelist)
+    deallocate (x2_pelist)
+    deallocate (y2_pelist)
 
   end subroutine register_bcs_3d
 
@@ -1169,25 +1174,13 @@ contains
     integer, dimension(2)                     :: layout
     integer                                   :: n
     character(len=1)                   :: tile_num
-    character(len=20)                  :: suffix
     character(len=120)                 :: fname_ne, fname_sw
 
     fname_ne = 'fv_BC_ne.res.nc'
     fname_sw = 'fv_BC_sw.res.nc'
 
-    call mpp_get_layout(Atm%domain, layout)
-    allocate(all_pelist(layout(1)*layout(2)))
-    do n = 1, layout(1)*layout(2)
-      all_pelist(n) = n - 1
-    end do
-
-    !!! If a nested grid, add "nestXX.tileX" to the filename
-    if (Atm%neststruct%nested) then
-       write(tile_num,'(I1)') Atm%neststruct%nestupdate
-       suffix = ''//trim(Atm%nml_filename)//".tile"//trim(tile_num)//""
-       fname_sw = fname_sw(1:len_trim(fname_sw)-2)//trim(suffix)//".nc"
-       fname_sw = fname_sw(1:len_trim(fname_sw)-2)//trim(suffix)//".nc"
-    endif
+    allocate(all_pelist(mpp_npes()))
+    call mpp_get_current_pelist(all_pelist)
 
     Atm%neststruct%BCfile_sw_is_open = open_file(Atm%neststruct%BCfile_sw, fname_sw, "overwrite", is_restart=.true., pelist=all_pelist)
     Atm%neststruct%BCfile_ne_is_open = open_file(Atm%neststruct%BCfile_ne, fname_ne, "overwrite", is_restart=.true., pelist=all_pelist)
@@ -1203,6 +1196,8 @@ contains
      call close_file(Atm%neststruct%BCfile_ne)
     endif
 
+    deallocate(all_pelist)
+
     return
   end subroutine fv_io_write_BCs
 
@@ -1213,25 +1208,13 @@ contains
     integer, dimension(2)              :: layout
     integer                            :: n
     character(len=1)                   :: tile_num
-    character(len=20)                  :: suffix
     character(len=120)                 :: fname_ne, fname_sw
 
     fname_ne = 'fv_BC_ne.res.nc'
     fname_sw = 'fv_BC_sw.res.nc'
 
-    call mpp_get_layout(Atm%domain, layout)
-    allocate(all_pelist(layout(1)*layout(2)))
-    do n = 1, layout(1)*layout(2)
-      all_pelist(n) = n - 1
-    end do
-
-    !!! If a nested grid, add "nestXX.tileX" to the filename
-    if (Atm%neststruct%nested) then
-       write(tile_num,'(I1)') Atm%neststruct%nestupdate
-       suffix = ''//trim(Atm%nml_filename)//".tile"//trim(tile_num)//""
-       fname_sw = fname_sw(1:len_trim(fname_sw)-2)//trim(suffix)//".nc"
-       fname_sw = fname_sw(1:len_trim(fname_sw)-2)//trim(suffix)//".nc"
-    endif
+    allocate(all_pelist(mpp_npes()))
+    call mpp_get_current_pelist(all_pelist)
 
     Atm%neststruct%BCfile_sw_is_open = open_file(Atm%neststruct%BCfile_sw, fname_sw, "read", is_restart=.true., pelist=all_pelist)
     Atm%neststruct%BCfile_ne_is_open = open_file(Atm%neststruct%BCfile_ne, fname_ne, "read", is_restart=.true., pelist=all_pelist)
@@ -1247,12 +1230,15 @@ contains
      call close_file(Atm%neststruct%BCfile_ne)
     endif
 
+
     !These do not work yet
     !need to modify register_bcs_?d to get ids for registered variables, and then use query_initialized_id
     !Atm%neststruct%divg_BC%initialized = field_exist(fname_ne, 'divg_north_t1', Atm%domain)
     !Atm%neststruct%w_BC%initialized    = field_exist(fname_ne, 'w_north_t1', Atm%domain)
     !Atm%neststruct%delz_BC%initialized = field_exist(fname_ne, 'delz_north_t1', Atm%domain)
     !if (is_master()) print*, ' BCs: ', Atm%neststruct%divg_BC%initialized, Atm%neststruct%w_BC%initialized, Atm%neststruct%delz_BC%initialized
+
+    deallocate(all_pelist)
 
     return
   end subroutine fv_io_read_BCs
