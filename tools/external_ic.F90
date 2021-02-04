@@ -419,8 +419,9 @@ contains
       call mpp_error(NOTE,'==> External_ic::get_nggps_ic: using control file '//trim(fn_gfs_ctl)//' for NGGPS IC')
 
 !--- read in the number of tracers in the NCEP NGGPS ICs
-    call read_data (Gfs_ctl, 'ntrac', ntrac)
-    call close_file(Gfs_ctl)
+      call read_data (Gfs_ctl, 'ntrac', ntrac)
+      call close_file(Gfs_ctl)
+    endif
     if (ntrac > ntracers) call mpp_error(FATAL,'==> External_ic::get_nggps_ic: more NGGPS tracers &
                                &than defined in field_table '//trim(fn_gfs_ctl)//' for NGGPS IC')
 
@@ -767,7 +768,7 @@ contains
           ak(1:levp+1) = wk2(1:levp+1,1)
           bk(1:levp+1) = wk2(1:levp+1,2)
           deallocate (wk2)
-          close_file(Gfs_ctl)
+          call close_file(Gfs_ctl)
         endif
 
         allocate (zh(is:ie,js:je,levp+1))   ! SJL
@@ -868,7 +869,7 @@ contains
           bk(1:levp+1) = wk2_tmp(2:levsp,2)
 
           deallocate (wk2_tmp)
-          close_file(Gfs_ctl)
+          call close_file(Gfs_ctl)
         endif
 
         ! surface pressure (Pa)
@@ -992,6 +993,8 @@ contains
       integer :: levp = 50
       logical :: checker_tr = .false.
       integer :: nt_checker = 0
+      character(len=20) :: suffix
+      character(len=1) :: tile_num
       real(kind=R_GRID), dimension(2):: p1, p2, p3
       real(kind=R_GRID), dimension(3):: e1, e2, ex, ey
       integer:: i,j,k,nts, ks
@@ -1148,7 +1151,7 @@ contains
         call mpp_error(NOTE,'==> External_ic::get_hrrr_ic: using tiled data file '//trim(fn_oro_ics)//' for HRRR IC')
 
         ! edge pressure (Pa)
-        if( open_file(HRRR_restart, fn_gfs_ics, "read", Atm%domain,is_restart=.true., dont_add_res_to_filename=.true.) ) then
+        if( open_file(HRRR_restart, fn_hrr_ics, "read", Atm%domain,is_restart=.true., dont_add_res_to_filename=.true.) ) then
           call register_axis(HRRR_restart, "lat", "y")
           call register_axis(HRRR_restart, "lon", "x")
           call register_axis(HRRR_restart, "lonp", "x", domain_position=east)
@@ -1159,7 +1162,7 @@ contains
 
           call register_restart_field(HRRR_restart, 'ps', ps, (/"lat", "lon"/))
           ! physical temperature (K)
-          call register_restart_field(HRRR_restart, 'pt', pt, (/"lat", "lon"/))
+          call register_restart_field(HRRR_restart, 'pt', t, (/"lat", "lon"/))
           ! D-grid west  face tangential wind component (m/s)
           call register_restart_field(HRRR_restart, 'u_w', u_w, (/"lev","lat","lonp"/))
           ! D-grid west  face normal wind component (m/s)
@@ -1169,7 +1172,7 @@ contains
           ! D-grid south face normal wind component (m/s)
           call register_restart_field(HRRR_restart, 'v_s', v_s, (/"lev","latp","lon"/))
           ! vertical velocity 'omega' (m/s)
-          call register_restart_field(HRRR_restart, 'w', omga, (/"lev","lat","lon"/))
+          call register_restart_field(HRRR_restart, 'w', w, (/"lev","lat","lon"/))
           ! GFS grid height at edges (including surface height)
           call register_restart_field(HRRR_restart, 'zh', zh, (/"lev","lat","lon"/))
 
