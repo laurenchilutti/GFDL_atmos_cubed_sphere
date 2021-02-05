@@ -435,15 +435,6 @@ contains
     call get_ncdim1( ncid, 'levsp', levsp )
     call close_ncfile( ncid )
 
-    !!! If a nested grid, add "nestXX.tileX" to the filename
-    if (Atm%neststruct%nested) then
-       write(tile_num,'(I1)') Atm%neststruct%nestupdate
-       suffix = "tile"//trim(tile_num)//""
-       fn_sfc_ics = fn_sfc_ics(1:len_trim(fn_sfc_ics)-2)//trim(suffix)//".nc"
-       fn_oro_ics = fn_oro_ics(1:len_trim(fn_oro_ics)-2)//trim(suffix)//".nc"
-       fn_gfs_ics = fn_gfs_ics(1:len_trim(fn_gfs_ics)-2)//trim(suffix)//".nc"
-    endif
-
 ! read in gfs_data. If levp = 66, read only the lowest 65 level
     if (levsp .eq. 66) then
       call mpp_error(NOTE,'==> External_ic::get_nggps_ic: Correcting BAD IC')

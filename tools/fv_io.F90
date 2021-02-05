@@ -741,10 +741,6 @@ contains
     !If the number of tiles is equal to 1, and it is not a nested case add the ".tile1" suffix to the filename
     if (ntiles == 1 .and. .not. Atm%neststruct%nested) then
        suffix = ''//trim(suffix)//'.tile1'
-    !If this is a nested case add the ".tileXX" suffix to the filename
-    elseif (Atm%neststruct%nested) then
-       write(tile_num,'(I1)') Atm%neststruct%nestupdate
-       suffix = ''//trim(suffix)//'.tile' //trim(tile_num)//''
     endif
 
     fname = 'RESTART/fv_core.res'//trim(suffix)//'.nc'
