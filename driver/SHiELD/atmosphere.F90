@@ -38,7 +38,6 @@ use fms_mod,                only: open_namelist_file,    &
                                   close_file, error_mesg, FATAL,     &
                                   check_nml_error, stdlog,           &
                                   write_version_number,              &
-                                  set_domain,                        &
                                   mpp_clock_id, mpp_clock_begin,     &
                                   mpp_clock_end, CLOCK_SUBCOMPONENT, &
                                   clock_flag_default
@@ -354,8 +353,6 @@ contains
    endif
 #endif
 
-   call set_domain(Atm(mygrid)%domain)
-
  end subroutine atmosphere_init
 
 
@@ -537,8 +534,6 @@ contains
 !rab   type (physics_type),   intent(inout) :: Physics
 
   ! initialize domains for writing global physics data
-   !call set_domain ( Atm(mygrid)%domain )
-
    if ( Atm(mygrid)%flagstruct%nudge ) call fv_nwp_nudge_end
 
 
@@ -1078,8 +1073,6 @@ contains
    nt_dyn = ncnst-pnats   !nothing more than nq
 
    if( nq<3 ) call mpp_error(FATAL, 'GFS phys must have 3 interactive tracers')
-
-   !call set_domain ( Atm(mygrid)%domain )
 
    call timing_on('GFS_TENDENCIES')
 
