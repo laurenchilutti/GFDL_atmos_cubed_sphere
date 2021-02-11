@@ -38,10 +38,10 @@ use fms_mod,                only: open_namelist_file,    &
                                   close_file, error_mesg, FATAL,     &
                                   check_nml_error, stdlog,           &
                                   write_version_number,              &
-                                  set_domain,   &
+                                  set_domain,                        &
                                   mpp_clock_id, mpp_clock_begin,     &
                                   mpp_clock_end, CLOCK_SUBCOMPONENT, &
-                                  clock_flag_default, nullify_domain
+                                  clock_flag_default
 use fms2_io_mod,            only: file_exists
 use mpp_mod,                only: mpp_error, stdout, FATAL, WARNING, NOTE, &
                                   input_nml_file, mpp_root_pe,    &
@@ -238,7 +238,6 @@ contains
    ! Allocate grid variables to be used to calculate gradient in 2nd order flux exchange
    ! This data is only needed for the COARSEST grid.
    !call switch_current_Atm(Atm(mygrid))
-   call set_domain(Atm(mygrid)%domain)
 
    allocate(Grid_box%dx    (   isc:iec  , jsc:jec+1))
    allocate(Grid_box%dy    (   isc:iec+1, jsc:jec  ))
@@ -293,12 +292,11 @@ contains
            Atm(mygrid)%atmos_axes(4), Atm(mygrid)%coarse_graining)
    endif
    if (Atm(mygrid)%coarse_graining%write_coarse_restart_files) then
-      call fv_coarse_restart_init(mygrid, Atm(mygrid)%npz, Atm(mygrid)%flagstruct%nt_prog, &
+      call fv_coarse_restart_init(Atm(mygrid)%npz, Atm(mygrid)%flagstruct%nt_prog, &
            Atm(mygrid)%flagstruct%nt_phys, Atm(mygrid)%flagstruct%hydrostatic, &
            Atm(mygrid)%flagstruct%hybrid_z, Atm(mygrid)%flagstruct%fv_land, &
            Atm(mygrid)%coarse_graining%write_coarse_dgrid_vel_rst, &
            Atm(mygrid)%coarse_graining%write_coarse_agrid_vel_rst, &
-           Atm(mygrid)%coarse_graining%domain, &
            Atm(mygrid)%coarse_graining%restart)
    endif
    
@@ -335,7 +333,6 @@ contains
 
 
    if ( Atm(mygrid)%flagstruct%na_init>0 ) then
-      call nullify_domain ( )
       if ( .not. Atm(mygrid)%flagstruct%hydrostatic ) then
            call prt_maxmin('Before adi: W', Atm(mygrid)%w, isc, iec, jsc, jec, Atm(mygrid)%ng, npz, 1.)
       endif
@@ -351,7 +348,6 @@ contains
    endif
 
 #ifdef DEBUG
-   call nullify_domain()
    call fv_diag(Atm(mygrid:mygrid), zvir, Time, -1)
    if (Atm(mygrid)%coarse_graining%write_coarse_diagnostics) then
       call fv_coarse_diag(Atm(mygrid:mygrid), fv_time)
@@ -541,7 +537,7 @@ contains
 !rab   type (physics_type),   intent(inout) :: Physics
 
   ! initialize domains for writing global physics data
-   call set_domain ( Atm(mygrid)%domain )
+   !call set_domain ( Atm(mygrid)%domain )
 
    if ( Atm(mygrid)%flagstruct%nudge ) call fv_nwp_nudge_end
 
@@ -550,7 +546,6 @@ contains
      call gfdl_mp_end ( )
    endif
 
-   call nullify_domain ( )
    if (first_diag) then
       call timing_on('FV_DIAG')
       call fv_diag(Atm(mygrid:mygrid), zvir, fv_time, Atm(mygrid)%flagstruct%print_freq)
@@ -1084,7 +1079,7 @@ contains
 
    if( nq<3 ) call mpp_error(FATAL, 'GFS phys must have 3 interactive tracers')
 
-   call set_domain ( Atm(mygrid)%domain )
+   !call set_domain ( Atm(mygrid)%domain )
 
    call timing_on('GFS_TENDENCIES')
 
@@ -1263,7 +1258,6 @@ contains
        call twoway_nesting(Atm, ngrids, grids_on_this_pe, zvir, fv_time, mygrid)
        call timing_off('TWOWAY_UPDATE')
     endif
-   call nullify_domain()
 
   !---- diagnostics for FV dynamics -----
    if (Atm(mygrid)%flagstruct%print_freq /= -99) then
@@ -1272,7 +1266,6 @@ contains
      fv_time = Time_next
      call get_time (fv_time, seconds,  days)
 
-     call nullify_domain()
      call timing_on('FV_DIAG')
      call fv_diag(Atm(mygrid:mygrid), zvir, fv_time, Atm(mygrid)%flagstruct%print_freq)
       if (Atm(mygrid)%coarse_graining%write_coarse_diagnostics) then

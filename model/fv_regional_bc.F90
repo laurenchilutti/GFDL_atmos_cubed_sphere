@@ -58,7 +58,7 @@ module fv_regional_mod
    use fv_fill_mod,       only: fillz
    use fv_eta_mod,        only: get_eta_level
    use fms_mod,           only: check_nml_error
-   use fms_io_mod,        only: read_data
+   use fms2_io_mod,       only: read_data, open_file, close_file
    use boundary_mod,      only: fv_nest_BC_type_3D
 
       private
@@ -1220,7 +1220,10 @@ contains
      allocate (wk2(levp+1,2))
      allocate (ak_in(levp+1))                                               !<-- Save the input vertical structure for
      allocate (bk_in(levp+1))                                               !    remapping BC updates during the forecast.
-     call read_data('INPUT/gfs_ctrl.nc','vcoord',wk2, no_domain=.TRUE.)
+     if (open_file(Atm%Grid_input, 'INPUT/gfs_ctrl.nc', "read")) then
+       call read_data(Atm%Grid_input,'vcoord',wk2)
+       call close_file(Atm%Grid_input)
+     endif
      ak_in(1:levp+1) = wk2(1:levp+1,1)
      ak_in(1) = 1.e-9
      bk_in(1:levp+1) = wk2(1:levp+1,2)

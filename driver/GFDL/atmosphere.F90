@@ -265,7 +265,7 @@ contains
    ! Allocate grid variables to be used to calculate gradient in 2nd order flux exchange
    ! This data is only needed for the COARSEST grid.
    !call switch_current_Atm(Atm(mygrid))
-   call set_domain(Atm(mygrid)%domain)
+   !call set_domain(Atm(mygrid)%domain)
 
    allocate(Grid_box%dx    (   isc:iec  , jsc:jec+1))
    allocate(Grid_box%dy    (   isc:iec+1, jsc:jec  ))
@@ -319,12 +319,11 @@ contains
            Atm(mygrid)%atmos_axes(4), Atm(mygrid)%coarse_graining)
    endif
    if (Atm(mygrid)%coarse_graining%write_coarse_restart_files) then
-      call fv_coarse_restart_init(mygrid, Atm(mygrid)%npz, Atm(mygrid)%flagstruct%nt_prog, &
+      call fv_coarse_restart_init(Atm(mygrid)%npz, Atm(mygrid)%flagstruct%nt_prog, &
            Atm(mygrid)%flagstruct%nt_phys, Atm(mygrid)%flagstruct%hydrostatic, &
            Atm(mygrid)%flagstruct%hybrid_z, Atm(mygrid)%flagstruct%fv_land, &
            Atm(mygrid)%coarse_graining%write_coarse_dgrid_vel_rst, &
            Atm(mygrid)%coarse_graining%write_coarse_agrid_vel_rst, &
-           Atm(mygrid)%coarse_graining%domain, &
            Atm(mygrid)%coarse_graining%restart)
    endif
 
@@ -440,7 +439,7 @@ contains
 
                     call timing_off('ATMOS_INIT')
 
-   call set_domain(Atm(mygrid)%domain)
+   !call set_domain(Atm(mygrid)%domain)
 
  end subroutine atmosphere_init
 
@@ -601,7 +600,7 @@ contains
 !rab   type (physics_type),   intent(inout) :: Physics
 
   ! initialize domains for writing global physics data
-   call set_domain ( Atm(mygrid)%domain )
+   !call set_domain ( Atm(mygrid)%domain )
 
 
 !--- end nudging module ---
@@ -621,7 +620,7 @@ contains
 
    call atmos_global_diag_end
    call fv_cmip_diag_end
-   call nullify_domain ( )
+   !call nullify_domain ( )
    call fv_end(Atm, mygrid)
    deallocate (Atm)
 
@@ -917,7 +916,7 @@ contains
 
    n = mygrid
 
-   call set_domain ( Atm(mygrid)%domain )
+   !call set_domain ( Atm(mygrid)%domain )
 
 !--- put u/v tendencies into haloed arrays u_dt and v_dt
 !$OMP parallel do default(shared) private(nb, ibs, ibe, jbs, jbe)
@@ -1000,7 +999,7 @@ contains
    endif
 #endif
 
-   call nullify_domain()
+   !call nullify_domain()
   !---- diagnostics for FV dynamics -----
    if (Atm(mygrid)%flagstruct%print_freq /= -99) then
      call mpp_clock_begin(id_fv_diag)

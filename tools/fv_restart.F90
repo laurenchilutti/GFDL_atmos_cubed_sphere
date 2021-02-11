@@ -58,10 +58,8 @@ module fv_restart_mod
   use mpp_mod,             only: mpp_send, mpp_recv, mpp_sync_self, mpp_set_current_pelist, mpp_get_current_pelist, mpp_npes, mpp_pe, mpp_sync
   use mpp_domains_mod,     only: CENTER, CORNER, NORTH, EAST,  mpp_get_C2F_index, WEST, SOUTH
   use mpp_domains_mod,     only: mpp_global_field
-  use fms_mod,             only: file_exist
   use fv_treat_da_inc_mod, only: read_da_inc
-  use fms_io_mod,          only: fms_io_set_filename_appendix => set_filename_appendix
-  use fms2_io_mod,         only: fms2_io_set_filename_appendix =>set_filename_appendix
+  use fms2_io_mod,         only: file_exists, set_filename_appendix
   use coarse_grained_restart_files_mod, only: fv_io_write_restart_coarse
 
   implicit none
@@ -170,8 +168,8 @@ contains
           write(fname_ne,'(A, I2.2, A)') 'INPUT/fv_BC_ne.res.nest', Atm(n)%grid_number, '.nc'
           write(fname_sw,'(A, I2.2, A)') 'INPUT/fv_BC_sw.res.nest', Atm(n)%grid_number, '.nc'
           if (is_master()) print*, 'Searching for nested grid BC files ', trim(fname_ne), ' ', trim (fname_sw)
-          do_read_restart = file_exist(fname, Atm(n)%domain)
-          do_read_restart_bc = file_exist(fname_ne, Atm(n)%domain) .and. file_exist(fname_sw, Atm(n)%domain)
+          do_read_restart = file_exists(fname)
+          do_read_restart_bc = file_exists(fname_ne) .and. file_exists(fname_sw)
           if (is_master()) then
              print*, 'FV_RESTART: ', n, do_read_restart, do_read_restart_bc
              if (.not. do_read_restart_bc) write(*,*) 'BC files not found, re-generating nested grid boundary conditions'
@@ -179,7 +177,7 @@ contains
           Atm(N)%neststruct%first_step = .not. do_read_restart_bc
        else
           fname='INPUT/fv_core.res.nc'
-          do_read_restart = file_exist('INPUT/fv_core.res.nc') .or. file_exist('INPUT/fv_core.res.tile1.nc')
+          do_read_restart = file_exists('INPUT/fv_core.res.nc') .or. file_exists('INPUT/fv_core.res.tile1.nc')
           if (is_master()) print*, 'FV_RESTART: ', n, do_read_restart, do_read_restart_bc
        endif
 
@@ -192,8 +190,7 @@ contains
        ! The two calls are needed until everything uses fms2io
        if (Atm(n)%neststruct%nested .and. n==this_grid) then
           write(gnn,'(A4, I2.2)') "nest", Atm(n)%grid_number
-          call fms_io_set_filename_appendix(gnn)
-          call fms2_io_set_filename_appendix(gnn)
+          call set_filename_appendix(gnn)
        endif
 
        !3preN. Topography BCs for nest, including setup for blending

@@ -31,7 +31,6 @@ module fv_nwp_nudge_mod
  use constants_mod,     only: pi=>pi_8, grav, rdgas, cp_air, kappa, cnst_radius =>radius
  use fms_mod,           only: write_version_number, open_namelist_file, &
                               check_nml_error, file_exist, close_file
-!use fms_io_mod,        only: field_size
  use mpp_mod,           only: mpp_error, FATAL, stdlog, get_unit, mpp_pe
  use mpp_domains_mod,   only: mpp_update_domains, domain2d
  use time_manager_mod,  only: time_type,  get_time, get_date

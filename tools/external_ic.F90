@@ -33,7 +33,6 @@ module external_ic_mod
                                  FmsNetcdfFile_t, FmsNetcdfDomainFile_t, read_restart, &
                                  register_restart_field, register_axis
    use fms_mod,            only: open_namelist_file, check_nml_error, close_nml_file => close_file
-   use fms_io_mod,         only: get_tile_string
    use mpp_mod,            only: mpp_error, FATAL, NOTE, mpp_pe, mpp_root_pe
    use mpp_mod,            only: stdlog, input_nml_file
    use mpp_parameter_mod,  only: AGRID_PARAM=>AGRID
@@ -255,7 +254,7 @@ contains
 
     tile_id = mpp_get_tile_id( fv_domain )
 
-       call get_tile_string(fname, 'INPUT/fv_core.res'//trim(gn)//'.tile', tile_id(n), '.nc' )
+    fname = 'INPUT/fv_core.res'//trim(gn)//'.nc'
     call mpp_error(NOTE, 'external_ic: looking for '//fname)
 
 

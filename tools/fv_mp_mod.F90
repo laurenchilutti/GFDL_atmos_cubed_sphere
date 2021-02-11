@@ -50,7 +50,6 @@
       use mpp_domains_mod, only: nest_domain_type
       use mpp_parameter_mod, only : WUPDATE, EUPDATE, SUPDATE, NUPDATE, XUPDATE, YUPDATE
       use fv_arrays_mod, only: fv_atmos_type, fv_grid_bounds_type
-      use fms_io_mod, only: set_domain
       use mpp_mod, only : mpp_get_current_pelist, mpp_set_current_pelist
       use mpp_domains_mod, only : mpp_get_domain_shift
       use ensemble_manager_mod, only : get_ensemble_id
@@ -910,9 +909,6 @@ subroutine switch_current_domain(new_domain,new_domain_for_coupler)
 
 !  if (debug .AND. (gid==masterproc)) write(*,200) tile, is, ie, js, je
 !200 format('New domain: ', i4.4, ' ', i4.4, ' ', i4.4, ' ', i4.4, ' ', i4.4, ' ')
-
-  call set_domain(new_domain)
-
 
 end subroutine switch_current_domain
 

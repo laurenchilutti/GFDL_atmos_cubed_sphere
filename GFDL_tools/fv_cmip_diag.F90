@@ -143,7 +143,7 @@ integer               :: id_pl700, id_pl700_bnds, id_nv
 
 
 ! Set domain so that diag_manager can access tile information
-  call set_domain(Atm(1)%domain)
+  !call set_domain(Atm(1)%domain)
 
 ! axis identifiers
   area_id = get_diag_field_id ('dynamics', 'area')
@@ -411,7 +411,7 @@ integer               :: id_pl700, id_pl700_bnds, id_nv
         call diag_field_add_attribute (id_zg1000, 'coordinates', 'p1000')
 
 !--- done ---
-  call nullify_domain()
+  !call nullify_domain()
   module_is_initialized=.true.
 
 !-----------------------------------------------------------------------
@@ -455,7 +455,7 @@ real, dimension(Atm(1)%bd%isc:Atm(1)%bd%iec, &
   ngc = Atm(n)%ng
   npz = Atm(n)%npz
 
-  call set_domain(Atm(n)%domain)
+  !call set_domain(Atm(n)%domain)
 
   ! set flags for computing quantities
   compute_rh = .false.
@@ -690,7 +690,7 @@ real, dimension(Atm(1)%bd%isc:Atm(1)%bd%iec, &
 
 !----------------------------------------------------------------------
 
-  call nullify_domain()
+  !call nullify_domain()
 
 !----------------------------------------------------------------------
 

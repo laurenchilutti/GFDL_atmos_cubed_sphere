@@ -50,9 +50,9 @@ module fv_grid_tools_mod
                                BGRID_SW_PARAM=>BGRID_SW, &
                                SCALAR_PAIR,              &
                                CORNER, CENTER, XUPDATE
-  use fms_mod,           only: get_mosaic_tile_grid
   use fms2_io_mod,       only: file_exists, variable_exists, open_file, read_data, &
-                               get_global_attribute, get_variable_attribute, close_file
+                               get_global_attribute, get_variable_attribute, &
+                               close_file, get_mosaic_tile_grid
   use mosaic_mod,       only : get_mosaic_ntiles
 
   use mpp_mod, only: mpp_transmit, mpp_recv
