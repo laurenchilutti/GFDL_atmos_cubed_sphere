@@ -2520,14 +2520,14 @@ endif
 
     if (open_file(ada_driver_restart, restart_file, "overwrite", domain, is_restart=.true.) then
        call register_axis(ada_driver_restart, "xaxis_1", size(Atm_var%u_adj,1)
-       call register_field(ada_driver_restart,, "xaxis_1", "double", (/"xaxis_1"/))
-       call register_variable_attribute(ada_driver_restart,,"xaxis_1", "axis", "X", str_len=1)
+       call register_field(ada_driver_restart, "xaxis_1", "double", (/"xaxis_1"/))
+       call register_variable_attribute(ada_driver_restart,"xaxis_1", "axis", "X", str_len=1)
        call register_axis(ada_driver_restart, "yaxis_1", size(Atm_var%u_adj,2)
-       call register_field(ada_driver_restart,, "yaxis_1", "double", (/"yaxis_1"/))
-       call register_variable_attribute(ada_driver_restart,,"yaxis_1", "axis", "Y", str_len=1)
+       call register_field(ada_driver_restart, "yaxis_1", "double", (/"yaxis_1"/))
+       call register_variable_attribute(ada_driver_restart,"yaxis_1", "axis", "Y", str_len=1)
        call register_axis(ada_driver_restart, "zaxis_1", size(Atm_var%u_adj,3)
-       call register_field(ada_driver_restart,, "zaxis_1", "double", (/"zaxis_1"/))
-       call register_variable_attribute(ada_driver_restart,,"zaxis_1", "axis", "Z", str_len=1)
+       call register_field(ada_driver_restart, "zaxis_1", "double", (/"zaxis_1"/))
+       call register_variable_attribute(ada_driver_restart,"zaxis_1", "axis", "Z", str_len=1)
        call register_axis(ada_driver_restart, "Time", unlimited)
        call register_field(ada_driver_restart, "Time", "double", (/"Time"/))
        call register_variable_attribute(ada_driver_restart, "Time", "cartesian_axis", "T",

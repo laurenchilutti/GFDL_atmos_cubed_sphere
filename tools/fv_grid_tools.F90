@@ -40,7 +40,6 @@ module fv_grid_tools_mod
                                mpp_get_data_domain, mpp_get_compute_domain, &
                                mpp_get_global_domain, mpp_global_sum, mpp_global_max, mpp_global_min
  use mpp_domains_mod,    only: domain2d
-  use mpp_io_mod,        only: mpp_get_att_value
 
   use mpp_parameter_mod, only: AGRID_PARAM=>AGRID,       &
                                DGRID_NE_PARAM=>DGRID_NE, &

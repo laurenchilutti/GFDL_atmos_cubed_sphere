@@ -45,7 +45,6 @@ module fv_diagnostics_mod
  use tracer_manager_mod, only: get_tracer_names, get_number_tracers, get_tracer_index
  use field_manager_mod,  only: MODEL_ATMOS
  use mpp_mod,            only: mpp_error, FATAL, stdlog, mpp_pe, mpp_root_pe, mpp_sum, mpp_max, NOTE, input_nml_file
- use mpp_io_mod,         only: mpp_flush
  use sat_vapor_pres_mod, only: compute_qs, lookup_es
 
  use fv_arrays_mod, only: max_step 

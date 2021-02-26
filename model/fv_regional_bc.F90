@@ -34,7 +34,11 @@ module fv_regional_mod
                                 mpp_error ,mpp_pe, mpp_sync,            &
                                 mpp_npes, mpp_root_pe, mpp_gather,      &
                                 mpp_get_current_pelist, NULL_PE
-   use mpp_io_mod
+   use fms2_io_mod,       only: open_file, close_file, register_axis,   &
+                                register_variable_attribute,            &
+                                register_global_attribute,              &
+                                register_field, read_data,              &
+                                FmsNetcdfDomainFile_t, write_data
    use tracer_manager_mod,only: get_tracer_index
    use field_manager_mod, only: MODEL_ATMOS
    use time_manager_mod,  only: get_time                                &
@@ -6004,11 +6008,8 @@ subroutine remap_scalar_regional_bc_nh(Atm                            &
     integer,                intent(IN)    :: isd, ied, jsd, jed, nlev
     integer,                intent(IN)    :: stag
 
-    integer                             :: unit
     character(len=128)                  :: fname
-    type(axistype)                      :: x, y, z
-    type(fieldtype)                     :: f
-    type(domain1D)                      :: xdom, ydom
+    type(FmsNetcdfDomainFile_t)         :: fileobj
     integer                             :: nz
     integer                             :: is, ie, js, je
     integer                             :: isg, ieg, jsg, jeg, nxg, nyg, npx, npy
@@ -6022,7 +6023,6 @@ subroutine remap_scalar_regional_bc_nh(Atm                            &
     write(fname,"(A,A,A,I1.1,A)") "regional_",name,".tile", 7 , ".nc"
     write(0,*)'dump_field_3d: file name = |', trim(fname) , '|'
 
-    call mpp_get_domain_components( domain, xdom, ydom )
     call mpp_get_compute_domain( domain, is,  ie,  js,  je )
     call mpp_get_global_domain ( domain, isg, ieg, jsg, jeg, xsize=npx, ysize=npy, position=CENTER )
 
@@ -6067,32 +6067,47 @@ subroutine remap_scalar_regional_bc_nh(Atm                            &
     call mpp_gather(isection_s,isection_e,jsection_s,jsection_e, nz, &
                     pelist, field(isection_s:isection_e,jsection_s:jsection_e,:), glob_field, is_root_pe, halo, halo)
 
-    call mpp_open( unit, trim(fname), action=MPP_WRONLY, form=MPP_NETCDF, threading=MPP_SINGLE)
+    if (open_file(fileobj, fname, "overwrite", domain)) then
+        call register_axis(fileobj, "grid_xt", nxg)
+        call register_field(fileobj, "grid_xt", "double", (/"grid_xt"/))
+        call register_variable_attribute(fileobj, "grid_xt", "axis", "X", str_len=1)
+        call register_variable_attribute(fileobj, "grid_xt", "units", "km", str_len=len("km"))
+        call register_variable_attribute(fileobj, "grid_xt", "long_name", "X distance", str_len=len("X distance"))
+        call register_variable_attribute(fileobj, "grid_xt", "cartesian", "X", str_len=1)
 
-    call mpp_write_meta( unit, x, 'grid_xt', 'km', 'X distance', 'X', domain=xdom, data=(/(i*1.0,i=1,nxg)/) )
-    call mpp_write_meta( unit, y, 'grid_yt', 'km', 'Y distance', 'Y', domain=ydom, data=(/(j*1.0,j=1,nyg)/) )
-    call mpp_write_meta( unit, z, 'lev',     'km', 'Z distance',                   data=(/(i*1.0,i=1,nz)/) )
+        call register_axis(fileobj, "grid_yt", nyg)
+        call register_field(fileobj, "grid_yt", "double", (/"grid_yt"/))
+        call register_variable_attribute(fileobj, "grid_yt", "axis", "Y", str_len=1)
+        call register_variable_attribute(fileobj, "grid_yt", "units", "km", str_len=len("km"))
+        call register_variable_attribute(fileobj, "grid_yt", "long_name", "Y distance", str_len=len("Y distance"))
+        call register_variable_attribute(fileobj, "grid_yt", "cartesian", "Y", str_len=1)
 
-    call mpp_write_meta( unit, f, (/x,y,z/), name, 'unit', name)
-    call mpp_write_meta( unit, "stretch_factor", rval=stretch_factor )
-    call mpp_write_meta( unit, "target_lon", rval=target_lon )
-    call mpp_write_meta( unit, "target_lat", rval=target_lat )
-    call mpp_write_meta( unit, "cube_res", ival= cube_res)
-    call mpp_write_meta( unit, "parent_tile", ival=parent_tile )
-    call mpp_write_meta( unit, "refine_ratio", ival=refine_ratio )
-    call mpp_write_meta( unit, "istart_nest", ival=istart_nest )
-    call mpp_write_meta( unit, "jstart_nest", ival=jstart_nest )
-    call mpp_write_meta( unit, "iend_nest", ival=iend_nest )
-    call mpp_write_meta( unit, "jend_nest", ival=jend_nest )
-    call mpp_write_meta( unit, "ihalo_shift", ival=halo )
-    call mpp_write_meta( unit, "jhalo_shift", ival=halo )
-    call mpp_write_meta( unit, mpp_get_id(f), "hstagger", cval=stagname )
-    call mpp_write( unit, x )
-    call mpp_write( unit, y )
-    call mpp_write( unit, z )
-    call mpp_write( unit, f, glob_field )
+        call register_axis(fileobj, "lev", nz)
+        call register_field(fileobj, "lev", "double", (/"lev"/))
+        call register_variable_attribute(fileobj, "lev", "axis", "Z", str_len=1)
+        call register_variable_attribute(fileobj, "lev", "units", "km", str_len=len("km"))
+        call register_variable_attribute(fileobj, "lev", "long_name", "Z distance", str_len=len("Z distance"))
 
-    call mpp_close( unit )
+        call register_global_attribute(fileobj, "stretch_factor", stretch_factor )
+        call register_global_attribute(fileobj, "target_lon", target_lon )
+        call register_global_attribute(fileobj, "target_lat", target_lat )
+        call register_global_attribute(fileobj, "cube_res", cube_res)
+        call register_global_attribute(fileobj, "parent_tile", parent_tile )
+        call register_global_attribute(fileobj, "refine_ratio", refine_ratio )
+        call register_global_attribute(fileobj, "istart_nest", istart_nest )
+        call register_global_attribute(fileobj, "jstart_nest", jstart_nest )
+        call register_global_attribute(fileobj, "iend_nest", iend_nest )
+        call register_global_attribute(fileobj, "jend_nest", jend_nest )
+        call register_global_attribute(fileobj, "ihalo_shift", halo )
+        call register_global_attribute(fileobj, "jhalo_shift", halo )
+        call register_global_attribute(fileobj,  "hstagger", stagname )
+
+        call register_field(fileobj, name, "double", (/"grid_xt", "grid_yt", "lev"/))
+
+        call write_data(fileobj, name, glob_field)
+
+        call close_file(fileobj)
+    endif
 
   end subroutine dump_field_3d
 
@@ -6104,11 +6119,8 @@ subroutine remap_scalar_regional_bc_nh(Atm                            &
     integer,                intent(IN)    :: isd, ied, jsd, jed
     integer,                intent(IN)    :: stag
 
-    integer                             :: unit
     character(len=128)                  :: fname
-    type(axistype)                      :: x, y
-    type(fieldtype)                     :: f
-    type(domain1D)                      :: xdom, ydom
+    type(FmsNetcdfDomainFile_t)         :: fileobj
     integer                             :: is, ie, js, je
     integer                             :: isg, ieg, jsg, jeg, nxg, nyg, npx, npy
     integer                             :: i, j, halo, iext, jext
@@ -6121,7 +6133,6 @@ subroutine remap_scalar_regional_bc_nh(Atm                            &
     write(fname,"(A,A,A,I1.1,A)") "regional_",name,".tile", 7 , ".nc"
 !    write(0,*)'dump_field_3d: file name = |', trim(fname) , '|'
 
-    call mpp_get_domain_components( domain, xdom, ydom )
     call mpp_get_compute_domain( domain, is,  ie,  js,  je )
     call mpp_get_global_domain ( domain, isg, ieg, jsg, jeg, xsize=npx, ysize=npy, position=CENTER )
 
@@ -6165,30 +6176,41 @@ subroutine remap_scalar_regional_bc_nh(Atm                            &
     call mpp_gather(isection_s,isection_e,jsection_s,jsection_e, &
                     pelist, field(isection_s:isection_e,jsection_s:jsection_e), glob_field, is_root_pe, halo, halo)
 
-    call mpp_open( unit, trim(fname), action=MPP_WRONLY, form=MPP_NETCDF, threading=MPP_SINGLE)
+    if (open_file(fileobj, fname, "overwrite", domain)) then
+        call register_axis(fileobj, "grid_xt", nxg)
+        call register_field(fileobj, "grid_xt", "double", (/"grid_xt"/))
+        call register_variable_attribute(fileobj, "grid_xt", "axis", "X", str_len=1)
+        call register_variable_attribute(fileobj, "grid_xt", "units", "km", str_len=len("km"))
+        call register_variable_attribute(fileobj, "grid_xt", "long_name", "X distance", str_len=len("X distance"))
+        call register_variable_attribute(fileobj, "grid_xt", "cartesian", "X", str_len=1)
 
-    call mpp_write_meta( unit, x, 'grid_xt', 'km', 'X distance', 'X', domain=xdom, data=(/(i*1.0,i=1,nxg)/) )
-    call mpp_write_meta( unit, y, 'grid_yt', 'km', 'Y distance', 'Y', domain=ydom, data=(/(j*1.0,j=1,nyg)/) )
+        call register_axis(fileobj, "grid_yt", nyg)
+        call register_field(fileobj, "grid_yt", "double", (/"grid_yt"/))
+        call register_variable_attribute(fileobj, "grid_yt", "axis", "Y", str_len=1)
+        call register_variable_attribute(fileobj, "grid_yt", "units", "km", str_len=len("km"))
+        call register_variable_attribute(fileobj, "grid_yt", "long_name", "Y distance", str_len=len("Y distance"))
+        call register_variable_attribute(fileobj, "grid_yt", "cartesian", "Y", str_len=1)
 
-    call mpp_write_meta( unit, f, (/x,y/), name, 'unit', name)
-    call mpp_write_meta( unit, "stretch_factor", rval=stretch_factor )
-    call mpp_write_meta( unit, "target_lon", rval=target_lon )
-    call mpp_write_meta( unit, "target_lat", rval=target_lat )
-    call mpp_write_meta( unit, "cube_res", ival= cube_res)
-    call mpp_write_meta( unit, "parent_tile", ival=parent_tile )
-    call mpp_write_meta( unit, "refine_ratio", ival=refine_ratio )
-    call mpp_write_meta( unit, "istart_nest", ival=istart_nest )
-    call mpp_write_meta( unit, "jstart_nest", ival=jstart_nest )
-    call mpp_write_meta( unit, "iend_nest", ival=iend_nest )
-    call mpp_write_meta( unit, "jend_nest", ival=jend_nest )
-    call mpp_write_meta( unit, "ihalo_shift", ival=halo )
-    call mpp_write_meta( unit, "jhalo_shift", ival=halo )
-    call mpp_write_meta( unit, mpp_get_id(f), "hstagger", cval=stagname )
-    call mpp_write( unit, x )
-    call mpp_write( unit, y )
-    call mpp_write( unit, f, glob_field )
+        call register_global_attribute(fileobj, "stretch_factor", stretch_factor )
+        call register_global_attribute(fileobj, "target_lon", target_lon )
+        call register_global_attribute(fileobj, "target_lat", target_lat )
+        call register_global_attribute(fileobj, "cube_res", cube_res)
+        call register_global_attribute(fileobj, "parent_tile", parent_tile )
+        call register_global_attribute(fileobj, "refine_ratio", refine_ratio )
+        call register_global_attribute(fileobj, "istart_nest", istart_nest )
+        call register_global_attribute(fileobj, "jstart_nest", jstart_nest )
+        call register_global_attribute(fileobj, "iend_nest", iend_nest )
+        call register_global_attribute(fileobj, "jend_nest", jend_nest )
+        call register_global_attribute(fileobj, "ihalo_shift", halo )
+        call register_global_attribute(fileobj, "jhalo_shift", halo )
+        call register_global_attribute(fileobj,  "hstagger", stagname )
 
-    call mpp_close( unit )
+        call register_field(fileobj, name, "double", (/"grid_xt", "grid_yt", "lev"/))
+
+        call write_data(fileobj, name, glob_field)
+
+        call close_file(fileobj)
+    endif
 
   end subroutine dump_field_2d
 
