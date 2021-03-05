@@ -34,8 +34,7 @@ use block_control_mod,      only: block_control_type
 use constants_mod,          only: cp_air, rdgas, grav, rvgas, kappa, pstd_mks, pi
 use time_manager_mod,       only: time_type, get_time, set_time, operator(+), &
                                   operator(-), operator(/), time_type_to_real
-use fms_mod,                only: open_namelist_file,    &
-                                  close_file, error_mesg, FATAL,     &
+use fms_mod,                only: error_mesg, FATAL,                 &
                                   check_nml_error, stdlog,           &
                                   write_version_number,              &
                                   mpp_clock_id, mpp_clock_begin,     &

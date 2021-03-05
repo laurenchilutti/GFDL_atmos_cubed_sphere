@@ -20,8 +20,7 @@
 !***********************************************************************
  module fv_surf_map_mod
 
-      use fms_mod,           only: check_nml_error,            &
-                                   open_namelist_file, close_file, stdlog, &
+      use fms_mod,           only: check_nml_error, stdlog, &
                                    mpp_pe, mpp_root_pe, FATAL, error_mesg
       use fms2_io_mod,       only: file_exists
       use mpp_mod,           only: get_unit, input_nml_file, mpp_error
@@ -1562,18 +1561,8 @@ subroutine read_namelist
 
    if (namelist_read) return
 
-#ifdef INTERNAL_FILE_NML
     read  (input_nml_file, nml=surf_map_nml, iostat=io)
     ierr = check_nml_error(io,'surf_map_nml')
-#else
-    unit = open_namelist_file ( )
-    ierr=1
-    do while (ierr /= 0)
-      read  (unit, nml=surf_map_nml, iostat=io, end=10)
-      ierr = check_nml_error(io,'surf_map_nml')
-    enddo
- 10 call close_file (unit)
-#endif
 
 !  write version and namelist to log file
 

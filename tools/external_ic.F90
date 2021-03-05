@@ -27,12 +27,11 @@
 module external_ic_mod
 
    use external_sst_mod,   only: i_sst, j_sst, sst_ncep
-   use fms_mod,            only: write_version_number
+   use fms_mod,            only: write_version_number, check_nml_error
    use fms2_io_mod,        only: file_exists, open_file, close_file, read_data, variable_exists, &
                                  get_variable_size, get_global_attribute, global_att_exists, &
                                  FmsNetcdfFile_t, FmsNetcdfDomainFile_t, read_restart, &
                                  register_restart_field, register_axis
-   use fms_mod,            only: open_namelist_file, check_nml_error, close_nml_file => close_file
    use mpp_mod,            only: mpp_error, FATAL, NOTE, mpp_pe, mpp_root_pe
    use mpp_mod,            only: stdlog, input_nml_file
    use mpp_parameter_mod,  only: AGRID_PARAM=>AGRID
@@ -356,15 +355,8 @@ contains
 
     call mpp_error(NOTE,'Using external_IC::get_nggps_ic which is valid only for data which has been &
                         &horizontally interpolated to the current cubed-sphere grid')
-#ifdef INTERNAL_FILE_NML
     read (input_nml_file,external_ic_nml,iostat=ios)
     ierr = check_nml_error(ios,'external_ic_nml')
-#else
-    unit=open_namelist_file()
-    read (unit,external_ic_nml,iostat=ios)
-    ierr = check_nml_error(ios,'external_ic_nml')
-    call close_nml_file(unit)
-#endif
 
     unit = stdlog()
     call write_version_number ( 'EXTERNAL_IC_MOD::get_nggps_ic', version )
@@ -994,15 +986,8 @@ contains
 
       call mpp_error(NOTE,'Using external_IC::get_hrrr_ic which is valid only for data which has been &
                           &horizontally interpolated to the current lambert grid')
-#ifdef INTERNAL_FILE_NML
       read (input_nml_file,external_ic_nml,iostat=ios)
       ierr = check_nml_error(ios,'external_ic_nml')
-#else
-      unit=open_namelist_file()
-      read (unit,external_ic_nml,iostat=ios)
-      ierr = check_nml_error(ios,'external_ic_nml')
-      call close_nml_file(unit)
-#endif
 
       unit = stdlog()
       call write_version_number ( 'EXTERNAL_IC_MOD::get_hrrr_ic', version )

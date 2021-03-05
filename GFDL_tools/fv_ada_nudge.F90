@@ -38,8 +38,7 @@ module fv_ada_nudge_mod
  use external_sst_mod,  only: i_sst, j_sst, sst_ncep, sst_anom, forecast_mode
  use diag_manager_mod,  only: register_diag_field, send_data
  use constants_mod,     only: pi, grav, rdgas, cp_air, kappa, cnst_radius=>radius, seconds_per_day
- use fms_mod,           only: write_version_number, open_namelist_file, &
-                              check_nml_error, file_exist, close_nml_file=>close_file
+ use fms_mod,           only: write_version_number, check_nml_error
  use mpp_mod,           only: mpp_error, FATAL, stdlog, get_unit, mpp_pe, input_nml_file
  use mpp_mod,           only: mpp_root_pe, stdout ! snz
  use mpp_mod,           only: mpp_clock_id, mpp_clock_begin, mpp_clock_end
@@ -64,7 +63,7 @@ module fv_ada_nudge_mod
 
  use fms2_io_mod,       only : register_restart_field, open_file, close_file, &
                                read_restart, register_axis, register_field, &
-                               register_variable_attribute
+                               register_variable_attribute, file_exists
  use axis_utils_mod, only : frac_index
 
 #ifdef ENABLE_ADA
@@ -1521,20 +1520,9 @@ endif
 
    track_file_name = "No_File_specified"
 
-#ifdef INTERNAL_FILE_NML
-       read(input_nml_file, nml = fv_ada_nudge_nml, iostat = io)
-       ierr = check_nml_error(io,'fv_ada_nudge_nml')
-#else
-    if( file_exist( 'input.nml' ) ) then
-       unit = open_namelist_file ()
-       io = 1
-       do while ( io .ne. 0 )
-          read( unit, nml = fv_ada_nudge_nml, iostat = io, end = 10 )
-          ierr = check_nml_error(io,'fv_ada_nudge_nml')
-       end do
-10     call close_nml_file ( unit )
-    end if
-#endif
+    read(input_nml_file, nml = fv_ada_nudge_nml, iostat = io)
+    ierr = check_nml_error(io,'fv_ada_nudge_nml')
+
     call write_version_number ( 'FV_ADA_NUDGE_MOD', version )
     if ( master ) then
          f_unit=stdlog()
@@ -1850,7 +1838,7 @@ endif
                                           !! model run
   integer :: is,  ie,  js,  je
 
-  if( .not. file_exist(fname) ) then
+  if( .not. file_exists(fname) ) then
      call mpp_error(FATAL,'==> Error from get_ncep_analysis: file not found')
   else
      call open_ncfile( fname, ncid )        ! open the file

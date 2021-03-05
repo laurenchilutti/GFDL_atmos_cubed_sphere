@@ -20,9 +20,9 @@
 !***********************************************************************
 module read_climate_nudge_data_mod
 
-use fms_mod, only: open_namelist_file, check_nml_error, close_nml_file=>close_file, &
+use fms_mod, only: check_nml_error, &
                    stdlog, mpp_pe, mpp_root_pe, write_version_number, &
-                   string, error_mesg, FATAL, NOTE, file_exist
+                   string, error_mesg, FATAL, NOTE
 use fms2_io_mod,   only: open_file, close_file, get_num_dimensions, &
                          get_dimension_names, get_dimension_size, FmsNetcdfFile_t, &
                          get_num_variables, get_variable_names, get_variable_size, &
@@ -117,20 +117,8 @@ integer, intent(out) :: nlon, nlat, nlev, ntime
   enddo
 
 !----- read namelist -----
-#ifdef INTERNAL_FILE_NML
   read (input_nml_file, nml=read_climate_nudge_data_nml, iostat=io)
   ierr = check_nml_error (io, 'read_climate_nudge_data_nml')
-#else
-  if (file_exist('input.nml') ) then
-    iunit = open_namelist_file()
-    ierr=1
-    do while (ierr /= 0)
-      read (iunit, nml=read_climate_nudge_data_nml, iostat=io, end=10)
-      ierr = check_nml_error (io, 'read_climate_nudge_data_nml')
-    enddo
-10  call close_nml_file (iunit)
-  endif
-#endif
 
 !----- write version and namelist to log file -----
 

@@ -34,8 +34,7 @@ use atmos_co2_mod,         only: atmos_co2_rad, co2_radiation_override
 use block_control_mod,     only: block_control_type
 use constants_mod,         only: cp_air, rdgas, grav, rvgas, kappa, pstd_mks
 use time_manager_mod,      only: time_type, get_time, set_time, operator(+)
-use fms_mod,               only: open_namelist_file,    &
-                                 close_file, error_mesg, FATAL,     &
+use fms_mod,               only: error_mesg, FATAL,                 &
                                  check_nml_error, stdlog,           &
                                  write_version_number,              &
                                  mpp_pe, mpp_root_pe, set_domain,   &

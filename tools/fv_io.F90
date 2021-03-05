@@ -33,7 +33,6 @@ module fv_io_mod
   ! for the model.
   !</DESCRIPTION>
 
-  use fms_mod,                 only: file_exist
   use fms2_io_mod,             only: FmsNetcdfFile_t, FmsNetcdfDomainFile_t, &
                                      register_restart_field, register_axis, unlimited, &
                                      open_file, read_restart, read_restart_bc, write_restart, &
