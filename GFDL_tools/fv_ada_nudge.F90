@@ -62,7 +62,7 @@ module fv_ada_nudge_mod
  use fv_arrays_mod,     only: fv_grid_type, fv_grid_bounds_type, fv_nest_type, R_GRID
 
  use fms2_io_mod,       only : register_restart_field, open_file, close_file, &
-                               read_restart, register_field, &
+                               read_restart, register_field, FmsNetcdfFile_t, &
                                register_variable_attribute, file_exists
  use fv_io_mod,         only : fv_io_register_axis
  use axis_utils_mod, only : frac_index
