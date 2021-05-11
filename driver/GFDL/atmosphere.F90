@@ -38,9 +38,10 @@ use time_manager_mod,       only: time_type, get_time, set_time, operator(+), &
 use fms_mod,                only: error_mesg, FATAL,     &
                                   check_nml_error, stdlog,           &
                                   write_version_number,              &
+                                  set_domain,                        &
                                   mpp_clock_id, mpp_clock_begin,     &
                                   mpp_clock_end, CLOCK_SUBCOMPONENT, &
-                                  clock_flag_default
+                                  clock_flag_default, nullify_domain
 use fms2_io_mod,            only: file_exists
 use mpp_mod,                only: mpp_error, stdout, FATAL, WARNING, NOTE, &
                                   input_nml_file, mpp_root_pe,    &
@@ -398,6 +399,7 @@ contains
    call fv_io_register_nudge_restart ( Atm )
 
    if ( Atm(mygrid)%flagstruct%na_init>0 ) then
+      call nullify_domain ( )
       if ( .not. Atm(mygrid)%flagstruct%hydrostatic ) then
            call prt_maxmin('Before adi: W', Atm(mygrid)%w, isc, iec, jsc, jec, Atm(mygrid)%ng, npz, 1.)
       endif
@@ -477,6 +479,8 @@ contains
    id_fv_diag   = mpp_clock_id ('FV Diag',     flags = clock_flag_default, grain=CLOCK_SUBCOMPONENT )
 
                     call timing_off('ATMOS_INIT')
+
+   call set_domain(Atm(mygrid)%domain)
 
  end subroutine atmosphere_init
 
@@ -712,6 +716,9 @@ contains
 !rab   type (radiation_type), intent(inout) :: Radiation
 !rab   type (physics_type),   intent(inout) :: Physics
 
+   ! initialize domains for writing global physics data
+   call set_domain ( Atm(mygrid)%domain )
+
 !--- end nudging module ---
 #if defined (ATMOS_NUDGE)
    if ( Atm(mygrid)%flagstruct%nudge ) call atmos_nudge_end
@@ -731,6 +738,7 @@ contains
    call atmos_global_diag_end
    call fv_cmip_diag_end
       call timing_off('FV_DIAG')
+   call nullify_domain ( )
    call fv_end(Atm, mygrid)
    deallocate (Atm)
 
@@ -1026,6 +1034,8 @@ contains
 
    n = mygrid
 
+   call set_domain ( Atm(mygrid)%domain )
+
 !--- put u/v tendencies into haloed arrays u_dt and v_dt
 !$OMP parallel do default(shared) private(nb, ibs, ibe, jbs, jbe)
    do nb = 1,Atm_block%nblks
@@ -1103,6 +1113,7 @@ contains
    if (query_cmip_diag_id(ID_tnhus)) &
                   used = send_cmip_data_3d (ID_tnhus, (Atm(mygrid)%q(isc:iec,jsc:jec,:,sphum)-qtend(:,:,:,sphum))/dt_atmos, Time)
 
+   call nullify_domain()
   !---- diagnostics for FV dynamics -----
    if (Atm(mygrid)%flagstruct%print_freq /= -99) then
      call mpp_clock_begin(id_fv_diag)
