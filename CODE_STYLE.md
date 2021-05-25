@@ -67,20 +67,23 @@
 !***********************************************************************
 !*                   GNU Lesser General Public License
 !*
-!* This file is part of the GFDL Flexible Modeling System (FMS).
+!* This file is part of the FV3 dynamical core.
 !*
-!* FMS is free software: you can redistribute it and/or modify it under
-!* the terms of the GNU Lesser General Public License as published by
-!* the Free Software Foundation, either version 3 of the License, or (at
-!* your option) any later version.
+!* The FV3 dynamical core is free software: you can redistribute it
+!* and/or modify it under the terms of the
+!* GNU Lesser General Public License as published by the
+!* Free Software Foundation, either version 3 of the License, or
+!* (at your option) any later version.
 !*
-!* FMS is distributed in the hope that it will be useful, but WITHOUT
-!* ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-!* FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-!* for more details.
+!* The FV3 dynamical core is distributed in the hope that it will be
+!* useful, but WITHOUT ANYWARRANTY; without even the implied warranty
+!* of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+!* See the GNU General Public License for more details.
 !*
 !* You should have received a copy of the GNU Lesser General Public
-!* License along with FMS.  If not, see <http://www.gnu.org/licenses/>.
+!* License along with the FV3 dynamical core.
+!* If not, see <http://www.gnu.org/licenses/>.
+
 !***********************************************************************
 
 !> @file
@@ -130,11 +133,3 @@ module example_mod
 
 end module example_mod
 ```
-
-## C/C++
-
-### General
-* C code is written in GNU style.  Each new level in a program block is indented
-  by 2 spaces. Braces start on a new line, and are also indented by 2 spaces.
-* See the [Gnome C coding style guide](https://developer.gnome.org/programming-guidelines/stable/c-coding-style.html.en)
-  for more information
