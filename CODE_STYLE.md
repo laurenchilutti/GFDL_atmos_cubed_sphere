@@ -4,11 +4,11 @@
 
 * Trim all trailing whitespace from every line (some editors can do this
   automatically).
-* No <Tab> characters.
-* Supply a header for each file with a description of the file and the author(s)
-  name or GitHub ID.
-* A copy of the [Gnu Lesser General Public License](https://www.gnu.org/licenses/lgpl-3.0.en.html)
+* No tab characters.
+* A copy of the FV3 Gnu Lesser General Public License Header
   must be included at the top of each file.
+* Supply an author block for each file with a description of the file and the author(s)
+  name or GitHub ID.
 * Documentation should be written so that it can be parsed by [Doxygen](http://www.doxygen.nl/).
 * All variables should be defined, and include units. Unit-less variables should be marked `unitless`
 * Provide detailed descriptions of modules, interfaces, functions, and subroutines
@@ -21,8 +21,6 @@
 
 * Use Fortran 95 standard or newer
 * Two space indentation
-* Use `KIND` parameters from intrinsic fortran modules such as iso_fortran_env
-  or iso_c_binding to ensure portability
 * Never use implicit variables (i.e., always specify `IMPLICIT NONE`)
 * Lines must be <= 120 characters long (including comments)
 * logical, compound logical, and relational if statements may be one line,
@@ -32,13 +30,11 @@
   ```
 * Avoid the use of `GOTO` statements
 * Avoid the use of Fortran reserved words as variables (e.g. `DATA`, `NAME`)
-* Avoid the use of `COMMON` blocks
+* `COMMON` blocks should never be used
 
 ### Derived types
 
 * Type names must be in CapitalWord format.
-* Variables names must be in underscore_word format.
-* All member variables must be private.
 * Doxygen description on the line before the type definition.
 * Inline doxygen descriptions for all member variables.
 
@@ -55,7 +51,6 @@
 
 ## OpenMP
 
-* Directives should start at the beginning of the line, and be in lowercase.
 * All openMP directives should specify default(none), and then explicitly list
   all shared and private variables.
 * All critical sections must have a unique name.
@@ -89,10 +84,9 @@
 !> @file
 !! @brief Example code
 !! @author <developer>
-!! @email gfdl.climate.model.info@noaa.gov
+!! @email <email>
 
 module example_mod
-  use, intrinsic :: iso_fortran_env, only: INT32, REAL32
   use util_mod, only: util_func1
   implicit none
   private
@@ -102,9 +96,8 @@ module example_mod
 
   !> @brief Doxygen description of type.
   type,public :: CustomType
-    private
-    integer(kind=INT32) :: a_var !< Inline doxygen description.
-    real(kind=REAL32),dimension(:),allocatable :: b_arr !< long description
+    integer(kind=<KIND>) :: a_var !< Inline doxygen description.
+    real(kind=<KIND>),dimension(:),allocatable :: b_arr !< long description
                                                         !! continued on
                                                         !! multiple lines.
   endtype CustomType
@@ -115,8 +108,8 @@ module example_mod
   subroutine sub1(arg1, &
     & arg2, &
     & arg3)
-    real(kind=REAL32),intent(in) :: arg1 !< Inline doxygen description.
-    integer(kind=INT32),intent(inout) :: arg2 !< Inline doxygen description.
+    real(kind=<KIND>),intent(in) :: arg1 !< Inline doxygen description.
+    integer(kind=<KIND>),intent(inout) :: arg2 !< Inline doxygen description.
     character(len=*),intent(inout) :: arg3 !< Long inline doxygen
                                            !! description.
   end subroutine sub1
@@ -126,9 +119,9 @@ module example_mod
   function func1(arg1, &
     & arg2) &
     & result(res)
-    integer(kind=INT32),intent(in) :: arg1 !< Inline doxygen description
-    integer(kind=INT32),intent(in) :: arg2 !< Inline doxygen description
-    integer(kind=INT32) :: res
+    integer(kind=<KIND>),intent(in) :: arg1 !< Inline doxygen description
+    integer(kind=<KIND>),intent(in) :: arg2 !< Inline doxygen description
+    integer(kind=<KIND>) :: res
   end function func1
 
 end module example_mod
