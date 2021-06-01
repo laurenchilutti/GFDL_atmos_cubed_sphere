@@ -9,7 +9,7 @@
   must be included at the top of each file.
 * Supply an author block for each file with a description of the file and the author(s)
   name or GitHub ID.
-* Documentation should be written so that it can be parsed by [Doxygen](http://www.doxygen.nl/).
+* Documentation may be written so that it can be parsed by [Doxygen](http://www.doxygen.nl/).
 * All variables should be defined, and include units. Unit-less variables should be marked `unitless`
 * Provide detailed descriptions of modules, interfaces, functions, and subroutines
 * Define all function/subroutine arguments, and function results (see below)
@@ -35,15 +35,14 @@
 ### Derived types
 
 * Type names must be in CapitalWord format.
-* Doxygen description on the line before the type definition.
+* Description on the line before the type definition.
 * Inline doxygen descriptions for all member variables.
 
 ## Functions
 * Functions should include a result variable on its own line, that does not have
   a specific intent.
-* Inline doxygen descriptions for all arguments, except the result variable.
-* Doxygen description on the line(s) before the function definition.  This must
-  specify what the function is returning using the `@return` doxygen keyword.
+* Inline descriptions for all arguments, except the result variable.
+* Description on the line(s) before the function definition.  Specify what the function is returning (with the `@return` doxygen keyword if using doxygen).
 
 ## Blocks
 * terminate `do` loops with `enddo`
