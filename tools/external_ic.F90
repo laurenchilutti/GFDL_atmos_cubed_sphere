@@ -31,7 +31,7 @@ module external_ic_mod
    use fms2_io_mod,        only: file_exists, open_file, close_file, read_data, variable_exists, &
                                  get_variable_size, get_global_attribute, global_att_exists, &
                                  FmsNetcdfFile_t, FmsNetcdfDomainFile_t, read_restart, &
-                                 register_restart_field, register_axis
+                                 register_restart_field, register_axis, get_variable_dimension_names
    use mpp_mod,            only: mpp_error, FATAL, NOTE, mpp_pe, mpp_root_pe
    use mpp_mod,            only: stdlog, input_nml_file, mpp_npes, mpp_get_current_pelist
    use mpp_parameter_mod,  only: AGRID_PARAM=>AGRID
@@ -430,15 +430,12 @@ contains
       enddo
     endif
 
-   ! set dimensions for register restart
-   dim_names_2d(1) = "lat"
-   dim_names_2d(2) = "lon"
-
     !--- read in surface temperature (k) and land-frac
     ! surface skin temperature
    if( open_file(SFC_restart, fn_sfc_ics, "read", Atm%domain, is_restart=.true., dont_add_res_to_filename=.true.) ) then
-      call register_axis(SFC_restart, "lat", "y")
-      call register_axis(SFC_restart, "lon", "x")
+      call get_variable_dimension_names(SFC_restart, 'tsea', dim_names_2d)
+      call register_axis(SFC_restart, dim_names_2d(2), "y")
+      call register_axis(SFC_restart, dim_names_2d(1), "x")
       call register_restart_field(SFC_restart, 'tsea', Atm%ts, dim_names_2d)
       call read_restart(SFC_restart)
       call close_file(SFC_restart)
@@ -446,6 +443,10 @@ contains
       call mpp_error(FATAL,'==> Error in External_ic::get_nggps_ic: tiled file '//trim(fn_sfc_ics)//' for NGGPS IC does not exist')
     endif
     call mpp_error(NOTE,'==> External_ic::get_nggps_ic: using tiled data file '//trim(fn_sfc_ics)//' for NGGPS IC')
+
+    ! set dimensions for register restart
+    dim_names_2d(1) = "lat"
+    dim_names_2d(2) = "lon"
 
     ! terrain surface height -- (needs to be transformed into phis = zs*grav)
     if( open_file(ORO_restart, fn_oro_ics, "read", Atm%domain, is_restart=.true., dont_add_res_to_filename=.true.) ) then
@@ -1063,15 +1064,13 @@ contains
             enddo
           enddo
         endif
-       ! set dimensions for register restart
-       dim_names_2d(1) = "lat"
-       dim_names_2d(2) = "lon"
 
 !--- read in surface temperature (k) and land-frac
         ! surface skin temperature
        if( open_file(SFC_restart, fn_sfc_ics, "read", Atm%domain, is_restart=.true., dont_add_res_to_filename=.true.) ) then
-          call register_axis(SFC_restart, "lat", "y")
-          call register_axis(SFC_restart, "lon", "x")
+          call get_variable_dimension_names(SFC_restart, 'tsea', dim_names_2d)
+          call register_axis(SFC_restart, dim_names_2d(2), "y")
+          call register_axis(SFC_restart, dim_names_2d(1), "x")
           call register_restart_field(SFC_restart, 'tsea', Atm%ts, dim_names_2d)
           call read_restart(SFC_restart)
           call close_file(SFC_restart)
@@ -1079,6 +1078,10 @@ contains
           call mpp_error(FATAL,'==> Error in External_ic::get_hrrr_ic: tiled file '//trim(fn_sfc_ics)//' for HRRR IC does not exist')
         endif
         call mpp_error(NOTE,'==> External_ic::get_hrrr_ic: using tiled data file '//trim(fn_sfc_ics)//' for HRRR IC')
+
+        ! set dimensions for register restart
+        dim_names_2d(1) = "lat"
+        dim_names_2d(2) = "lon"
 
         ! terrain surface height -- (needs to be transformed into phis = zs*grav)
         if( open_file(ORO_restart, fn_oro_ics, "read", Atm%domain, is_restart=.true., dont_add_res_to_filename=.true.) ) then
