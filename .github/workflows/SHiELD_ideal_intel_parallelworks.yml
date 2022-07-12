@@ -1,0 +1,18 @@
+name: Pull Request CI SHiELD idealized tests with intel21
+
+on: [pull_request,workflow_dispatch]
+jobs:
+   parallelWorks:
+    runs-on: [self-hosted, Linux, X64]
+    steps:
+                - name: Run idealized SHiELD with intel 2021
+                  run: python3 /home/Lauren.Chilutti/pw/storage/PWscripts/PRdycoreintel21StartClusters.py $GITHUB_REF
+   ShutDownCluster:
+    runs-on: [self-hosted, Linux, X64]
+    if: always()
+    needs: [parallelWorks]
+    steps:
+                - name: Turn off cluster
+                  env:
+                          CLUSTER: dycore_ci
+                  run: python3 /home/Lauren.Chilutti/pw/storage/PWscripts/stopClusters.py $CLUSTER
