@@ -19,7 +19,7 @@ jobs:
    ShutDownCluster:
     runs-on: [self-hosted, Linux, X64]
     if: always()
-    needs: [Compile, Test]
+    needs: [Compile, Tests]
     steps:
       - name: Turn off cluster
         env:
