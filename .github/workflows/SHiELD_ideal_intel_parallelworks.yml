@@ -7,21 +7,20 @@ jobs:
     steps:
       - name: Compile SHiELD_solo
         run: python3 /home/Lauren.Chilutti/pw/storage/PWscripts/FV3compileStartClusters.py $GITHUB_REF
-   #Tests:
-   # runs-on: [self-hosted, Linux, X64]
-   # needs: [Compile]
-   # strategy:
-   #   max-parallel: 2
-   #   matrix:
-   #     test: [C128r20.solo.superC, C128r3.solo.TC, d96_2k.solo.bubble, C96.sw.modon]
-   # steps:
-   #   - name: Run Test
-   #     run: python3 /home/Lauren.Chilutti/pw/storage/PWscripts/FV3${{ matrix.test }}StartCLusters.py $GITHUB_REF
+   Tests:
+    runs-on: [self-hosted, Linux, X64]
+    needs: [Compile]
+    strategy:
+      max-parallel: 2
+      matrix:
+        test: [C128r20.solo.superC, C128r3.solo.TC, d96_2k.solo.bubble, C96.sw.modon]
+    steps:
+      - name: Run Test
+        run: python3 /home/Lauren.Chilutti/pw/storage/PWscripts/FV3${{ matrix.test }}StartCLusters.py $GITHUB_REF
    ShutDownCluster:
     runs-on: [self-hosted, Linux, X64]
     if: always()
-    #needs: [Compile, Tests]
-    needs: [Compile]
+    needs: [Compile, Tests]
     steps:
       - name: Turn off cluster
         env:
