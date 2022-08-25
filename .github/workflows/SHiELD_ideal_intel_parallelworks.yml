@@ -2,17 +2,26 @@ name: Pull Request CI SHiELD idealized tests with intel21
 
 on: [pull_request, workflow_dispatch]
 jobs:
-   parallelWorks:
+   Compile:
     runs-on: [self-hosted, Linux, X64]
     steps:
-                - name: Run idealized SHiELD with intel 2021
-                  run: python3 /home/Lauren.Chilutti/pw/storage/PWscripts/PRdycoreintel21StartClusters.py $GITHUB_REF
+      - name: Compile SHiELD_solo
+        run: python3 /home/Lauren.Chilutti/pw/storage/PWscripts/FV3compileStartClusters.py $GITHUB_REF
+   Tests:
+    runs-on: [self-hosted, Linux, X64]
+    needs: [Compile]
+    strategy:
+      matrix:
+        test: [C128r20.solo.superC, C128r3.solo.TC, d96_2k.solo.bubble, C96.sw.modon]
+    steps:
+      - name: Run Test
+        run: python3 /home/Lauren.Chilutti/pw/storage/PWscripts/FV3${{ matrix.test }}StartCLusters.py $GITHUB_REF
    ShutDownCluster:
     runs-on: [self-hosted, Linux, X64]
     if: always()
-    needs: [parallelWorks]
+    needs: [Compile, Test]
     steps:
-                - name: Turn off cluster
-                  env:
-                          CLUSTER: dycore_ci
-                  run: python3 /home/Lauren.Chilutti/pw/storage/PWscripts/stopClusters.py $CLUSTER
+      - name: Turn off cluster
+        env:
+          CLUSTER: ci_fv3
+        run: python3 /home/Lauren.Chilutti/pw/storage/PWscripts/stopClusters.py $CLUSTER
