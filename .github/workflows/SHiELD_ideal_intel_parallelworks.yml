@@ -7,7 +7,7 @@ jobs:
     steps:
       - name: Compile SHiELD_solo
         #run: python3 /home/Lauren.Chilutti/pw/storage/PWscripts/FV3compileStartClusters.py $GITHUB_REF
-        run: python3 /home/Lauren.Chilutti/pw/storage/PWscripts/FV3compileStartClusters.py
+        run: python3 /home/Lauren.Chilutti/pw/storage/PWscripts/FV3compileStartClusters.py main
    #Tests:
     #runs-on: [self-hosted, Linux, X64]
     #needs: [Compile]
