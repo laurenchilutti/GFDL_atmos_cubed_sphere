@@ -1,0 +1,16 @@
+name: Compile SHiELD SOLO adn run tests
+
+on: pull request
+jobs:
+  buildstep:
+    runs-on: [self-hosted]
+    name: SOLO SHiELD
+    steps:
+      - run: pyhon3 /pw/storage/PWscripts/FV3compileStartClusters.py $GITHUB_REF
+  shutdowncluster:
+    runs-on: [self-hosted]
+    name: shut down cluster
+    if: always()
+    needs: [buildstep]
+    steps:
+      - run: python3 /home/Lauren.Chilutti/pw/storage/PWscripts/stopClusters.py ci_fv3
