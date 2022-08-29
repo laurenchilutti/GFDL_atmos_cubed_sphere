@@ -1,6 +1,6 @@
-name: Compile SHiELD SOLO adn run tests
+name: Compile SHiELD SOLO and run tests
 
-on: pull request
+on: pull_request
 jobs:
   buildstep:
     runs-on: [self-hosted]
