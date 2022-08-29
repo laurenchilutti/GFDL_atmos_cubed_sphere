@@ -22,7 +22,6 @@ jobs:
       - env: 
           RUNNAME: ${{ matrix.runname }}
           RUNSCRIPT: ${{ matrix.runscript }}
-      - name: $RUNNAME
         run: $RUNSCRIPT
     
   shutdowncluster:
