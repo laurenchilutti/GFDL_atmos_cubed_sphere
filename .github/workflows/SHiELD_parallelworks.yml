@@ -4,12 +4,30 @@ on: pull_request
 jobs:
   buildstep:
     runs-on: [self-hosted]
-    name: SOLO SHiELD
+    name: SOLO SHiELD build
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix:
+        include:
+          - runname: Checkout code
+            runscript: python3 /pw/storage/PWscripts/FV3checkoutStartClusters.py $GITHUB_REF
+          - runname: Build sw
+            runscript: python3 /pw/storage/PWscripts/FV3swcompileStartClusters.py $GITHUB_REF
+          - runname: Build nh
+            runscript: python3 /pw/storage/PWscripts/FV3nhcompileStartClusters.py $GITHUB_REF
+          - runname: Build hydro
+            runscript: python3 /pw/storage/PWscripts/FV3hydrocompileStartClusters.py $GITHUB_REF
     steps:
-      - run: python3 /pw/storage/PWscripts/FV3compileStartClusters.py $GITHUB_REF
+      - env: 
+          RUNNAME: ${{ matrix.runname }}
+          RUNSCRIPT: ${{ matrix.runscript }}
+      - name: $RUNNAME
+      - run: $RUNSCRIPT
+    
   shutdowncluster:
     runs-on: [self-hosted]
-    name: shut down cluster
+    name: Shutdown cluster
     if: always()
     needs: [buildstep]
     steps:
