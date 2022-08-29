@@ -22,7 +22,7 @@ jobs:
     runs-on: [self-hosted, Linux, X64]
     if: always()
     #needs: [Compile, Tests]
-    needs:[Compile]
+    needs: [Compile]
     steps:
       - name: Turn off cluster
         env:
