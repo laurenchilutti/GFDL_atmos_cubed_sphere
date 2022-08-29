@@ -6,7 +6,7 @@ jobs:
     runs-on: [self-hosted]
     name: SOLO SHiELD
     steps:
-      - run: pyhon3 /pw/storage/PWscripts/FV3compileStartClusters.py $GITHUB_REF
+      - run: python3 /pw/storage/PWscripts/FV3compileStartClusters.py $GITHUB_REF
   shutdowncluster:
     runs-on: [self-hosted]
     name: shut down cluster
