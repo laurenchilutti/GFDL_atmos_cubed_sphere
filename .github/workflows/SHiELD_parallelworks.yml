@@ -23,7 +23,7 @@ jobs:
           RUNNAME: ${{ matrix.runname }}
           RUNSCRIPT: ${{ matrix.runscript }}
       - name: $RUNNAME
-      - run: $RUNSCRIPT
+        run: $RUNSCRIPT
     
   shutdowncluster:
     runs-on: [self-hosted]
