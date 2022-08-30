@@ -11,13 +11,13 @@ jobs:
       matrix:
         include:
           - runname: Checkout code
-            runscript: python3 /pw/storage/PWscripts/FV3checkoutStartClusters.py $GITHUB_HEAD_REF
+            runscript: python3 /pw/storage/PWscripts/FV3checkoutStartClusters.py $GITHUB_REF
           - runname: Build sw
-            runscript: python3 /pw/storage/PWscripts/FV3swStartClusters.py $GITHUB_HEAD_REF
+            runscript: python3 /pw/storage/PWscripts/FV3swStartClusters.py $GITHUB_REF
           - runname: Build nh
-            runscript: python3 /pw/storage/PWscripts/FV3nhStartClusters.py $GITHUB_HEAD_REF
+            runscript: python3 /pw/storage/PWscripts/FV3nhStartClusters.py $GITHUB_REF
           - runname: Build hydro
-            runscript: python3 /pw/storage/PWscripts/FV3hydroStartClusters.py $GITHUB_HEAD_REF
+            runscript: python3 /pw/storage/PWscripts/FV3hydroStartClusters.py $GITHUB_REF
     steps:
       - env: 
           RUNNAME: ${{ matrix.runname }}
