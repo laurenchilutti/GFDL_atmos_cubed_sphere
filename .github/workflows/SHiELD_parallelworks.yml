@@ -11,7 +11,7 @@ jobs:
       matrix:
         include:
           - runname: Checkout code
-            runscript: python3 /pw/storage/PWscripts/FV3checkoutStartClusters.py $GITHUB_HEAD_ REF
+            runscript: python3 /pw/storage/PWscripts/FV3checkoutStartClusters.py $GITHUB_HEAD_REF
           - runname: Build sw
             runscript: python3 /pw/storage/PWscripts/FV3swStartClusters.py $GITHUB_HEAD_REF
           - runname: Build nh
