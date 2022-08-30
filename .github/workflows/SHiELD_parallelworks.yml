@@ -20,6 +20,7 @@ jobs:
   tests:
     runs-on: [self-hosted]
     name: SOLO SHiELD test suite
+    needs: [buildstep]
     strategy:
       fail-fast: false
       max-parallel: 6
@@ -60,7 +61,7 @@ jobs:
           - runscript: FV3d96_2k.solo.bubble.n0StartClusters.py
           - runscript: FV3d96_2k.solo.bubble.nhKStartClusters.py
           - runscript: FV3d96_2k.solo.bubbleStartClusters.py
-          - runscript: FV3d96_500m.solo.mtn_scharStartClusters.py]
+          - runscript: FV3d96_500m.solo.mtn_scharStartClusters.py
     steps:
       - env:
           RUNPATH: ${{ matrix.runpath }}
