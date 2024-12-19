@@ -68,12 +68,21 @@ set -o pipefail
 ./${testname} " --partition=compute --mpi=pmi2 --job-name=${commit}_${testname} singularity exec -B /contrib -B /apps ${container} ${container_env_script}" |& tee ${logDir}/run_${testname}.log
 
 ## Compare Restarts to Baseline
-source $MODULESHOME/init/sh
-export MODULEPATH=/mnt/shared/manual_modules:/usr/share/modulefiles/Linux:/usr/share/modulefiles/Core:/usr/share/lmod/lmod/modulefiles/Core:/apps/modules/modulefiles:/apps/modules/modulefamilies/intel
-module load intel/2022.1.2
-module load netcdf
-module load nccmp
-for resFile in `ls ${baselineDir}/${testname}`
-do
-  nccmp -d ${baselineDir}/${testname}/${resFile} ${runDir}/${testname}/RESTART/${resFile}
-done
+#The following tests are not expectred to have run-to-run reproducibility:
+#d96_2k.solo.bubble
+#d96_2k.solo.bubble.n0
+#d96_2k.solo.bubble.nhK
+if [[ ${testname} == "d96_2k.solo.bubble" || ${testname} == "d96_2k.solo.bubble.n0" || ${testname} == "d96_2k.solo.bubble.nhK" ]]
+  then
+    echo "${testname} is not expected to reproduce so answers were not compared"
+  else
+    source $MODULESHOME/init/sh
+    export MODULEPATH=/mnt/shared/manual_modules:/usr/share/modulefiles/Linux:/usr/share/modulefiles/Core:/usr/share/lmod/lmod/modulefiles/Core:/apps/modules/modulefiles:/apps/modules/modulefamilies/intel
+    module load intel/2022.1.2
+    module load netcdf
+    module load nccmp
+    for resFile in `ls ${baselineDir}/${testname}`
+    do
+      nccmp -d ${baselineDir}/${testname}/${resFile} ${runDir}/${testname}/RESTART/${resFile}
+    done
+fi
