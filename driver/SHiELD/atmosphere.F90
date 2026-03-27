@@ -95,6 +95,7 @@ use external_aero_mod,  only: load_aero, read_aero, clean_aero
 use coarse_graining_mod, only: coarse_graining_init
 use coarse_grained_diagnostics_mod, only: fv_coarse_diag_init, fv_coarse_diag
 use coarse_grained_restart_files_mod, only: fv_coarse_restart_init
+use surf_diff_mod, only: surf_diff_type, compute_nu, compute_e, vert_diff_down_2
 
 implicit none
 private
@@ -153,6 +154,7 @@ public :: atmos_phys_driver_statein
 public :: atmosphere_coarse_graining_parameters
 public :: atmosphere_coarsening_strategy
 
+public :: populate_surf_diff, surf_diff_type
 !-----------------------------------------------------------------------
 ! version number of this module
 ! Include variable "version" to be written to log file.
@@ -1924,6 +1926,134 @@ if ( is_master() ) write(*,*) 'CALL atmos_global_diag_init'
 
    coarsening_strategy = Atm(mygrid)%coarse_graining%strategy
  end subroutine atmosphere_coarsening_strategy
+
+ subroutine populate_surf_diff (surf_diff, IPD_Data, IAU_Data, Atm_block)
+   type(surf_diff_type),       intent(in) :: Surf_diff
+   type(IPD_data_type),       intent(in) :: IPD_Data(:)
+   type(IAU_external_data_type), intent(in) :: IAU_Data
+   type(block_control_type),  intent(in) :: Atm_block
+
+   !--- local variables ---
+   integer :: nb, blen, ix, i, j, k, k1, npz
+   integer :: isd,ied,jsd,jed
+   real :: rdt
+   real, dimension(isc:iec,jsc:jec,1:atm(mygrid)%npz) :: p_full, z_full
+   real, dimension(isc:iec,jsc:jec,1:atm(mygrid)%npz+1)  :: p_half, z_half
+
+   ! necessary as some surf_diff calls will need variables over the compute domain only
+   real, dimension(isc:iec,jsc:jec,1:atm(mygrid)%npz) :: diff_local, nu, local_delp, local_pt, local_q
+
+   real, dimension(isc:iec,jsc:jec,1:atm(mygrid)%npz) :: e, a, b, c, g
+   real, dimension(isc:iec,jsc:jec,1:atm(mygrid)%npz) :: temp_tend, trac_tend, local_f1
+   real, dimension(isc:iec,jsc:jec,1:atm(mygrid)%npz) :: temp, e_global, f_t_global, f_q_global
+   real, dimension(isc:iec,jsc:jec) :: mu_delt_n, nu_n, e_n1, f_t_delt_n1, f_q_delt_n1, delta_t_n, delta_q_n
+
+   rdt=1./dt_atmos
+
+   npz=atm(mygrid)%npz
+
+   p_full(:,:,:)=0.
+   z_full(:,:,:)=0.
+   p_half(:,:,:)=0.
+   z_half(:,:,:)=0.
+
+   diff_local(:,:,:)=0.
+   temp_tend(:,:,:)=0.
+   trac_tend(:,:,:)=0.
+
+   Surf_diff % dtmass   = 0.0
+   Surf_diff % dflux_t  = 0.0
+   Surf_diff % delta_t  = 0.0
+   Surf_diff % delta_u  = 0.0
+   Surf_diff % delta_v  = 0.0
+   Surf_diff % dflux_tr = 0.0
+   Surf_diff % delta_tr = 0.0
+
+   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+   ! Populate surf_diff, this is for some variables and derivatives
+   ! at the bottom atmospheric layer for implicit land coupling
+   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+   do k=1,npz
+    do j=jsc,jec
+      do i=isc,iec
+        local_delp(i,j,k) = Atm(mygrid)%delp(i,j,k)
+        local_pt(i,j,k) = Atm(mygrid)%pt(i,j,k)
+        local_q(i,j,k) = Atm(mygrid)%q(i,j,k,1)
+        temp(i,j,k)=     atm(mygrid)%pt(i,j,k) !+ z_full(i,j,k)*(grav/cp_air)
+      enddo
+    enddo
+   enddo
+
+   do j=jsc,jec
+     do i=isc,iec
+       z_half(i,j,npz+1) = Atm(mygrid)%phis(i,j) * (1./grav)
+     enddo
+   enddo
+
+   do k=npz,1,-1
+     do j=jsc,jec
+       do i=isc,iec
+         p_half(i,j,k)=  Atm(mygrid)%pe(i,k,j)
+         p_full(i,j,k) = Atm(mygrid)%delp(i,j,k)/(Atm(mygrid)%peln(i,k+1,j)-Atm(mygrid)%peln(i,k,j))
+         z_half(i,j,k) = z_half(i,j,k+1) - Atm(mygrid)%delz(i,j,k)
+         z_full(i,j,k) = 0.5*(z_half(i,j,k) + z_half(i,j,k+1))
+       enddo
+     enddo
+   enddo
+
+   ! f1 and f2 are flipped !!!
+   do k=1,npz
+     k1=npz-k+1
+     do nb = 1,Atm_block%nblks
+       blen = Atm_block%blksz(nb)
+       do ix = 1, blen
+         i = Atm_block%index(nb)%ii(ix)
+         j = Atm_block%index(nb)%jj(ix)
+         diff_local(i,j,k)   = IPD_data(nb)%Statemid%dkt(ix,k1) 
+         temp_tend(i,j,k)    = IPD_data(nb)%Statemid%stored_dtdt(ix,k1)
+         trac_tend(i,j,k)    = IPD_data(nb)%Statemid%stored_dqdt(ix,k1,1)
+       enddo
+     enddo
+   enddo
+
+   do k=npz,npz
+     k1=npz-k+1
+     do nb = 1,Atm_block%nblks
+       blen = Atm_block%blksz(nb)
+       do ix = 1, blen
+         i = Atm_block%index(nb)%ii(ix)
+         j = Atm_block%index(nb)%jj(ix)
+         temp_tend(i,j,k)    = IPD_data(nb)%Statemid%stored_dtdt(ix,k1)     + (IPD_data(nb)%Statemid%stored_f1_out(ix,k) - temp(i,j,k))      * rdt
+         trac_tend(i,j,k)    = IPD_data(nb)%Statemid%stored_dqdt(ix,k1,1)   + (IPD_data(nb)%Statemid%stored_f2_out(ix,k) - Atm(mygrid)%q(i,j,k,1)) * rdt
+       enddo
+     enddo
+   enddo
+
+   call compute_nu (diff_local, p_half, p_full, z_full, local_pt, local_q, nu)
+   call compute_e (dt_atmos, 1./local_delp, nu, e, a, b, c, g)
+
+   call vert_diff_down_2                            &
+         (dt_atmos, 1./local_delp, nu, temp, local_q, &
+         temp_tend, trac_tend, &
+         e_global             (isc:iec,jsc:jec,:),    &
+         f_t_global           (isc:iec,jsc:jec,:),    &
+         f_q_global           (isc:iec,jsc:jec,:),    &
+         mu_delt_n, nu_n, e_n1, f_t_delt_n1, f_q_delt_n1, &
+         delta_t_n, delta_q_n)
+
+   do j=jsc,jec
+     do i=isc,iec
+       Surf_diff % dtmass(i,j)      = 1./atm(mygrid)%delp(i,j,npz)
+       Surf_diff % dflux_t(i,j)     = -nu(i,j,npz)*(1.0-e(i,j,npz-1))
+       Surf_diff % dflux_tr(i,j,1)  = -nu(i,j,npz)*(1.0-e(i,j,npz-1))
+       Surf_diff % delta_t(i,j)     = delta_t_n(i,j) + mu_delt_n(i,j)*nu_n(i,j)*f_t_delt_n1(i,j)
+       !Surf_diff % delta_tr(i,j,1)  =1*( delta_q_n(i,j)  + mu_delt_n(i,j)*nu_n(i,j)*f_q_delt_n1(i,j) )
+     enddo
+   enddo
+
+! We also need to update these quantities that are used in flux_up_to_atmos
+
+ end subroutine populate_surf_diff
 
 #include "atmosphere_r4.fh"
 #include "atmosphere_r8.fh"
