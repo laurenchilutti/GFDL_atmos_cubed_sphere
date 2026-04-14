@@ -1927,6 +1927,10 @@ if ( is_master() ) write(*,*) 'CALL atmos_global_diag_init'
    coarsening_strategy = Atm(mygrid)%coarse_graining%strategy
  end subroutine atmosphere_coarsening_strategy
 
+! The routine below populates Atmos%surf_diff following the AMx model logic.
+! This is required, as these fields are expected by the land model.
+! The full derivation can be found in vert_diff.tech.ps in atmos_phys.
+
  subroutine populate_surf_diff (surf_diff, IPD_Data, IAU_Data, Atm_block)
    type(surf_diff_type),       intent(in) :: Surf_diff
    type(IPD_data_type),       intent(in) :: IPD_Data(:)
