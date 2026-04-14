@@ -2016,7 +2016,7 @@ if ( is_master() ) write(*,*) 'CALL atmos_global_diag_init'
      enddo
    enddo
 
-   do k=npz,npz
+   do k=npz,npz ! clean this up
      k1=npz-k+1
      do nb = 1,Atm_block%nblks
        blen = Atm_block%blksz(nb)
