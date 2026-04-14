@@ -154,7 +154,7 @@ public :: atmos_phys_driver_statein
 public :: atmosphere_coarse_graining_parameters
 public :: atmosphere_coarsening_strategy
 
-public :: populate_surf_diff, surf_diff_type
+public :: populate_surf_diff, land_feedback, surf_diff_type
 !-----------------------------------------------------------------------
 ! version number of this module
 ! Include variable "version" to be written to log file.
@@ -2054,6 +2054,34 @@ if ( is_master() ) write(*,*) 'CALL atmos_global_diag_init'
 ! We also need to update these quantities that are used in flux_up_to_atmos
 
  end subroutine populate_surf_diff
+
+ subroutine land_feedback (surf_diff, IPD_Data, IAU_Data, Atm_block)
+   type(surf_diff_type),       intent(in) :: Surf_diff
+   type(IPD_data_type),       intent(inout) :: IPD_Data(:)
+   type(IAU_external_data_type), intent(in) :: IAU_Data
+   type(block_control_type),  intent(in) :: Atm_block
+
+   !--- local variables ---
+   integer :: nb, blen, ix, i, j, k, k1, npz
+   real :: rdt
+
+   rdt=1./dt_atmos
+
+   npz=atm(mygrid)%npz
+
+   k=npz
+   do nb = 1,Atm_block%nblks
+     blen = Atm_block%blksz(nb)
+     do ix = 1, blen
+       i = Atm_block%index(nb)%ii(ix)
+       j = Atm_block%index(nb)%jj(ix)
+       IPD_data(nb)%Statemid%stored_f1_out(ix,k) = IPD_data(nb)%Statemid%stored_f1_out(ix,k) + surf_diff%delta_t(i,j)       ! getting updated temp from land
+       IPD_data(nb)%Statemid%stored_f2_out(ix,k) = IPD_data(nb)%Statemid%stored_f2_out(ix,k) + surf_diff%delta_tr(i,j,1)    ! getting updated moisture from land
+     enddo
+   enddo
+
+ end subroutine land_feedback
+
 
 #include "atmosphere_r4.fh"
 #include "atmosphere_r8.fh"
