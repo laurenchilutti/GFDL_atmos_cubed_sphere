@@ -1983,7 +1983,7 @@ if ( is_master() ) write(*,*) 'CALL atmos_global_diag_init'
         local_delp(i,j,k) = Atm(mygrid)%delp(i,j,k)
         local_pt(i,j,k) = Atm(mygrid)%pt(i,j,k)
         local_q(i,j,k) = Atm(mygrid)%q(i,j,k,1)
-        temp(i,j,k)=     atm(mygrid)%pt(i,j,k) !+ z_full(i,j,k)*(grav/cp_air)
+        temp(i,j,k) = atm(mygrid)%pt(i,j,k) !+ z_full(i,j,k)*(grav/cp_air) ! need to be checked
       enddo
     enddo
    enddo
