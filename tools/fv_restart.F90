@@ -623,7 +623,8 @@ contains
         do k=1,npz
         do j=jsc,jec
         do i=isc,iec
-           call random_number(pertn)
+           call random_number(pertn) ! return a [0,1] number
+           pertn = 2.0 * pertn - 1.0 ! zero mean perturbation [-1,1]
            Atm(n)%pt(i,j,k) = Atm(n)%pt(i,j,k) + pertn*Atm(n)%flagstruct%add_noise
            npts = npts + 1
            sumpertn = sumpertn + (pertn*Atm(n)%flagstruct%add_noise) ** 2
