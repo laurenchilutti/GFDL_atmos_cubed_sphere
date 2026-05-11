@@ -626,7 +626,7 @@ contains
            call random_number(pertn)
            Atm(n)%pt(i,j,k) = Atm(n)%pt(i,j,k) + pertn*Atm(n)%flagstruct%add_noise
            npts = npts + 1
-           sumpertn = sumpertn + pertn*Atm(n)%flagstruct%add_noise ** 2
+           sumpertn = sumpertn + (pertn*Atm(n)%flagstruct%add_noise) ** 2
         enddo
         enddo
         enddo
