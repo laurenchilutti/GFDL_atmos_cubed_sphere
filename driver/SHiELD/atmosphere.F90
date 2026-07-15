@@ -1930,7 +1930,7 @@ if ( is_master() ) write(*,*) 'CALL atmos_global_diag_init'
 ! The routine below populates Atmos%surf_diff following the AMx model logic.
 ! This is required, as these fields are expected by the land model.
 ! The full derivation can be found in the document:
-! atmos_phys/atmos_param/vert_diff/vert_diff.tech.ps
+! https://github.com/NOAA-GFDL/atmos_phys/blob/main/atmos_param/vert_diff/vert_diff.tech.ps
 
  subroutine populate_surf_diff (surf_diff, IPD_Data, IAU_Data, Atm_block)
    type(surf_diff_type),       intent(in) :: Surf_diff
