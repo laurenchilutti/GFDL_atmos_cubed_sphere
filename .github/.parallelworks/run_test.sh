@@ -52,10 +52,10 @@ echo "test is $testname"
 MODULESHOME=/usr/share/lmod/lmod
 source $MODULESHOME/init/sh
 #export MODULEPATH=/mnt/shared/manual_modules:/usr/share/modulefiles/Linux:/usr/share/modulefiles/Core:/usr/share/lmod/lmod/modulefiles/Core:/apps/modules/modulefiles:/apps/modules/modulefamilies/intel
+#module load intel/2022.1.2
+#module load impi/2022.1.2
 module use -a /usr/share/Modules/modulefiles /opt/intel/impi/2019.5.281/intel64/modulefiles /apps/modules/modulefiles
 module load intelmpi
-module load intel/2023.2.0
-module load netcdf/4.9.2
 module load nccmp
 testDir=${dirRoot}/${intelVersion}/GFDL_atmos_cubed_sphere/${branch}/${commit}
 logDir=${testDir}/log
@@ -83,9 +83,8 @@ if [[ ${testname} == "d96_2k.solo.bubble" || ${testname} == "d96_2k.solo.bubble.
   else
     #source $MODULESHOME/init/sh
     #export MODULEPATH=/mnt/shared/manual_modules:/usr/share/modulefiles/Linux:/usr/share/modulefiles/Core:/usr/share/lmod/lmod/modulefiles/Core:/apps/modules/modulefiles:/apps/modules/modulefamilies/intel
-    #module load intel/2023.2.0
-    #module load netcdf/4.9.2
-    #module load nccmp
+    #module load intel/2022.1.2
+    #module load netcdf
     for resFile in `ls ${baselineDir}/${testname}`
     do
       echo "comparing ${runDir}/${testname}/RESTART/${resFile}"
