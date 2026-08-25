@@ -53,7 +53,9 @@ jobs:
           HYDRO: ${{ matrix.hydro }}
           BIT: ${{ matrix.bit }}
           MODE: ${{ matrix.mode }}
-        run: $RUNSCRIPT -b $GITHUB_REF -h $GITHUB_SHA -c $CONFIG --hydro $HYDRO --bit $BIT -m $MODE
+        run: |
+           chmod +x /contrib/containers/load_spack_noaa-intel.sh
+           $RUNSCRIPT -b $GITHUB_REF -h $GITHUB_SHA -c $CONFIG --hydro $HYDRO --bit $BIT -m $MODE
         
   test:
     if: github.repository == 'NOAA-GFDL/GFDL_atmos_cubed_sphere'
