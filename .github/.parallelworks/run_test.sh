@@ -51,6 +51,7 @@ echo "test is $testname"
 ## Set up the directories
 MODULESHOME=/usr/share/lmod/lmod
 source $MODULESHOME/init/sh
+source /etc/profile.d/modules.sh
 #export MODULEPATH=/mnt/shared/manual_modules:/usr/share/modulefiles/Linux:/usr/share/modulefiles/Core:/usr/share/lmod/lmod/modulefiles/Core:/apps/modules/modulefiles:/apps/modules/modulefamilies/intel
 #module load intel/2022.1.2
 #module load impi/2022.1.2
