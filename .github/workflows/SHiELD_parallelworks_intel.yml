@@ -32,6 +32,7 @@ jobs:
     steps:
       - env:
           TEST_DIR: /contrib/fv3/2023.2.0/GFDL_atmos_cubed_sphere/$GITHUB_REF/$GITHUB_SHA
+          MODULESHOME: /usr/share/lmod/lmod
         run: |
           rm -rf $TEST_DIR
           mkdir -p $TEST_DIR/log
