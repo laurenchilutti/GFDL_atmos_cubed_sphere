@@ -30,8 +30,19 @@ jobs:
     runs-on: [gfdlacsciintel]
     name: Checkout Code
     steps:
-    - run: /contrib/fv3/GFDL_atmos_cubed_sphere_CI/checkout.sh -b $GITHUB_REF -h $GITHUB_SHA
-    
+      - env:
+          TEST_DIR: /contrib/fv3/2023.2.0/GFDL_atmos_cubed_sphere/$GITHUB_REF/$GITHUB_SHA
+        run: |
+          rm -rf $TEST_DIR
+          mkdir -p $TEST_DIR/log
+          cd $TEST_DIR
+          ## clone code
+          git clone --recursive https://github.com/NOAA-GFDL/SHiELD_build.git
+          sed -i 's/FV3-202411-public/main/g' $TEST_DIR/SHiELD_build/CHECKOUT_code
+          sed -i 's/2025.01.01/2025.03/g' $TEST_DIR/SHiELD_build/CHECKOUT_code
+          cd SHiELD_build && ./CHECKOUT_code |& tee $TEST_DIR/log/checkout.log
+          ## Check out the PR
+          cd $TEST_DIR/SHiELD_SRC/GFDL_atmos_cubed_sphere && git fetch origin $GITHUB_REF:toMerge && git merge toMerge
   build:
     if: github.repository == 'NOAA-GFDL/GFDL_atmos_cubed_sphere'
     runs-on: [gfdlacsciintel]
