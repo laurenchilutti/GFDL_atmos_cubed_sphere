@@ -31,7 +31,7 @@ jobs:
     name: Checkout Code
     steps:
       - env:
-          TEST_DIR: /contrib/fv3/2023.2.0/GFDL_atmos_cubed_sphere/$GITHUB_REF/$GITHUB_SHA
+          TEST_DIR: /contrib/fv3/2023.2.0/GFDL_atmos_cubed_sphere/${{ github.ref }}/${{ github.sha }}
           MODULESHOME: /usr/share/lmod/lmod
         run: |
           echo $TEST_DIR
