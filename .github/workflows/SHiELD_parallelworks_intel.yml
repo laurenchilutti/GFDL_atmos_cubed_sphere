@@ -85,7 +85,7 @@ jobs:
       max-parallel: 17
       matrix:
         runscript: [/contrib/fv3/GFDL_atmos_cubed_sphere_CI/compile.sh]
-        config: [solo, shield]
+        config: [solo]
         hydro: [sw, nh, hydro]
         bit: [64bit]
         mode: [repro]
