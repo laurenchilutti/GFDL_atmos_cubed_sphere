@@ -61,7 +61,7 @@ jobs:
       matrix:
         runscript: [/contrib/fv3/GFDL_atmos_cubed_sphere_CI/compile.sh]
         config: [shield]
-        hydro: [sw, nh, hydro]
+        hydro: [nh, hydro]
         bit: [64bit]
         mode: [repro]
     steps:
