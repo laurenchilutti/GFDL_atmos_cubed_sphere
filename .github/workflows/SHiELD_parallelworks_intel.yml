@@ -41,7 +41,7 @@ jobs:
           ## clone SHiELD_build
           git clone --recursive https://github.com/NOAA-GFDL/SHiELD_build.git
           ## modify checkout script to checkout main branches
-          sed -i 's/FV3-202411-public/main/g' $TEST_DIR/SHiELD_build/CHECKOUT_code
+          sed -i 's/FV3-202604-public/main/g' $TEST_DIR/SHiELD_build/CHECKOUT_code
           ## checkout the component code
           cd SHiELD_build && ./CHECKOUT_code |& tee $TEST_DIR/log/checkout.log
           ## Checkout the PR of GFDL_atmos_cubed_sphere that is being tested
